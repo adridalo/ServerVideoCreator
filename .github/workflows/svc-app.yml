@@ -1,51 +1,48 @@
-name: Build and Package Tkinter App
+name: Build Python Tkinter App
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build:
+  package:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: 📦 Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Package with PyInstaller
+      - name: 🛠️ Build Executable with PyInstaller
         run: |
-          pyinstaller --name ServerVideoCreator main.py
+          pyinstaller --onefile --name ServerVideoCreator main.py
 
-      - name: Copy extra files
-        run: |
-            $buildDir = "dist/main"
-            if (!(Test-Path $buildDir)) {
-                New-Item -ItemType Directory -Path $buildDir | Out-Null
-            }
-            Copy-Item ffmpeg.exe "$buildDir"
-            Copy-Item proxy.config.json "$buildDir"
-        shell: pwsh
-
-      - name: Zip packaged app as Build_xx
+      - name: 📁 Prepare Final Build Folder
         run: |
           $buildNumber = "${{ github.run_number }}"
-          Compress-Archive -Path dist\main\* -DestinationPath dist\Build_$buildNumber.zip
+          $packageDir = "package"
+          New-Item -ItemType Directory -Path $packageDir | Out-Null
 
-      - name: Upload build artifact
+          Copy-Item "dist/ServerVideoCreator.exe" "$packageDir/ServerVideoCreator.exe"
+          Copy-Item "ffmpeg.exe" "$packageDir/ffmpeg.exe"
+          Copy-Item "proxy.config.json" "$packageDir/proxy.config.json"
+
+          Compress-Archive -Path "$packageDir/*" -DestinationPath "Build_$buildNumber.zip"
+        shell: pwsh
+
+      - name: 📤 Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Build_${{ github.run_number }}
-          path: dist/Build_${{ github.run_number }}.zip
+          path: Build_${{ github.run_number }}.zip
