@@ -31,8 +31,13 @@ jobs:
 
       - name: Copy extra files
         run: |
-          copy ffmpeg.exe dist\main\
-          copy proxy.config.json dist\main\
+            $buildDir = "dist/main"
+            if (!(Test-Path $buildDir)) {
+                New-Item -ItemType Directory -Path $buildDir | Out-Null
+            }
+            Copy-Item ffmpeg.exe "$buildDir"
+            Copy-Item proxy.config.json "$buildDir"
+        shell: pwsh
 
       - name: Zip packaged app as Build_xx
         run: |
