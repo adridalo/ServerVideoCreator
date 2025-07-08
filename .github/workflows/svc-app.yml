@@ -30,19 +30,17 @@ jobs:
 
       - name: 📁 Prepare Final Build Folder
         run: |
-          $buildNumber = "${{ github.run_number }}"
           $packageDir = "package"
           New-Item -ItemType Directory -Path $packageDir | Out-Null
 
           Copy-Item "dist/ServerVideoCreator.exe" "$packageDir/ServerVideoCreator.exe"
           Copy-Item "ffmpeg.exe" "$packageDir/ffmpeg.exe"
           Copy-Item "proxy.config.json" "$packageDir/proxy.config.json"
-
-          Compress-Archive -Path "$packageDir/*" -DestinationPath "Build_$buildNumber.zip"
         shell: pwsh
 
       - name: 📤 Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Build_${{ github.run_number }}
-          path: Build_${{ github.run_number }}.zip
+          path: package/
+
