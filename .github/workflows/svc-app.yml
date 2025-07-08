@@ -41,5 +41,5 @@ jobs:
     - name: Upload executable artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Build_${{ format('{0:02d}', github.run_number) }}
+        name: Build_${{github.run_number}}
         path: dist/main.exe
