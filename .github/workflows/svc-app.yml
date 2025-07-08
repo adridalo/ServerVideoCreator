@@ -26,7 +26,7 @@ jobs:
 
       - name: 🛠️ Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --name ServerVideoCreator main.py
+          pyinstaller --onefile --name ServerVideoCreator --paths=. main.py
 
       - name: 📁 Prepare Final Build Folder
         run: |
