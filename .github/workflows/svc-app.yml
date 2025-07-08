@@ -24,9 +24,9 @@ jobs:
 
     - name: Verify required files exist
       run: |
-        if not exist ffmpeg.exe (exit 1)
-        if not exist proxy.config.json (exit 1)
-        if not exist main.py (exit 1)
+        if (-not (Test-Path ffmpeg.exe)) { exit 1 }
+        if (-not (Test-Path proxy.config.json)) { exit 1 }
+        if (-not (Test-Path main.py)) { exit 1 }
 
     - name: Copy required files into build folder
       run: |
