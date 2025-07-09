@@ -4,19 +4,21 @@ import yt_dlp
 
 
 def get_proxy():
-    import sys, os
+    import sys, os, json
+
+    base_paths = [os.path.abspath(".")]
 
     if getattr(sys, 'frozen', False):
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.abspath(".")
+        base_paths.insert(0, sys._MEIPASS)
 
-    config_path = os.path.join(base_path, "proxy.config.json")
-    proxy = ""
-    with open(config_path, 'r') as f:
-        data = json.load(f)
-        proxy = data['proxy']
-        return proxy
+    for base_path in base_paths:
+        config_path = os.path.join(base_path, "proxy.config.json")
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                data = json.load(f)
+                return data.get("proxy", "")
+    
+    return ""
     
 def fetch_video_info(url):
     ydl_options = {
