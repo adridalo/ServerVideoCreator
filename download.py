@@ -209,7 +209,7 @@ def download_video():
             ydl.download(video_url)
             finished_downloading_text.config(text="Download completed!", foreground="green")
         except Exception:
-            finished_downloading_text.config(text="Something went wrong with the download")
+            finished_downloading_text.config(text="Something went wrong with the download", foreground="red")
 
     finished_downloading_text.grid()
     open_folder_button.grid()
