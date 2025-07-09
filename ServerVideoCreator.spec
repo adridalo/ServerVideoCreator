@@ -1,22 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=['.'],
+    pathex=['.'],  # Current directory (repo root)
     binaries=[],
     datas=[
         ('ffmpeg.exe', '.'),
         ('proxy.config.json', '.'),
     ],
-    hiddenimports=[],
+    hiddenimports=['convert', 'download'],  # <-- Explicitly include your modules here
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
     optimize=0,
+    cipher=block_cipher,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
