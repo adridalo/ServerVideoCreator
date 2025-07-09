@@ -8,12 +8,15 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ServerVideoCreator
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -23,27 +26,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: Print Python search paths (for debugging)
+      - name: "Debug: Show working directory and files"
         run: |
-          python -c "import sys; print('Python search paths:', sys.path)"
-
-      - name: Show file structure (debug)
-        shell: cmd
-        run: |
-          cd /d %GITHUB_WORKSPACE%
+          echo Current directory: %CD%
           dir /b
 
-      - name: Build executable with PYTHONPATH set
+      - name: Build with publish.bat
         shell: cmd
         run: |
-          cd /d %GITHUB_WORKSPACE%
-          set PYTHONPATH=%CD%
-          pyinstaller --noconfirm --onefile --name ServerVideoCreator --paths=%CD% main.py
-          copy ffmpeg.exe dist\
-          copy proxy.config.json dist\
+          publish.bat
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Build_${{ github.run_number }}
-          path: dist\
+          path: ServerVideoCreator\dist\
