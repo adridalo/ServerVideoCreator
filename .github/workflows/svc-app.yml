@@ -1,45 +1,36 @@
-name: Build executable
+name: Build ServerVideoCreator
 
 on: 
-  push:
-    branches: [ main ]
-  
+    push:
+        branches: [main]
+    workflow_dispatch:
+
 jobs:
-  build-windows-exe:
-    runs-on: windows-latest
+    build:
+        runs-on: windows-latest
 
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+            - name: Setup Python
+              uses: actions/setup-python@v4
+              with:
+                python-version: '3.11'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
 
-    - name: Verify required files exist
-      run: |
-        if (-not (Test-Path ffmpeg.exe)) { exit 1 }
-        if (-not (Test-Path proxy.config.json)) { exit 1 }
-        if (-not (Test-Path main.py)) { exit 1 }
+            - name: Build executable
+              run: |
+                pyinstaller --noconfirm --onefile --name ServerVideoCreator main.py
+                copy ffmpeg.exe dist\
+                copy proxy.config.json dist\
 
-    - name: Copy required files into build folder
-      run: |
-        mkdir build_assets
-        copy ffmpeg.exe build_assets\
-        copy proxy.config.json build_assets\
-
-    - name: Build executable with PyInstaller
-      run: |
-        pyinstaller --noconfirm --onefile --add-data "build_assets\\ffmpeg.exe;." --add-data "build_assets\\proxy.config.json;." main.py
-
-    - name: Upload executable artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Build_${{github.run_number}}
-        path: dist/main.exe
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
+              with:
+                name: Build_${{ github.run_number }}
+                path: dist\
