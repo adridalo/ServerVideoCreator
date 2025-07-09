@@ -1,34 +1,41 @@
 name: Build ServerVideoCreator
 
 on: 
-    push:
-        branches: [main]
-    workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-    build:
-        runs-on: windows-latest
+  build:
+    runs-on: windows-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
 
-            - name: Install dependencies
-              run: |
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt
+      - name: List files (debugging)
+        run: |
+          dir
+          echo ------------------
+          type main.py
+          echo ------------------
+          dir /b *.py
 
-            - name: Build executable
-              run: .\publish.bat
+      - name: Build executable
+        run: .\publish.bat
 
-            - name: Upload artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: Build_${{ github.run_number }}
-                path: dist\
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build_${{ github.run_number }}
+          path: dist\
