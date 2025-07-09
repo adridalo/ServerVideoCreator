@@ -25,7 +25,7 @@ jobs:
 
             - name: Build executable
               run: |
-                publish.bat
+                .\publish.bat
 
             - name: Upload artifact
               uses: actions/upload-artifact@v4
