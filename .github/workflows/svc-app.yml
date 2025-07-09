@@ -8,10 +8,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-        run:
-            working-directory: ServerVideoCreator
-
 
     steps:
       - name: Checkout repository
@@ -27,7 +23,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: "Debug: Show working directory and files"
+      - name: "Debug: Show current directory and files"
+        shell: cmd
         run: |
           echo Current directory: %CD%
           dir /b
@@ -40,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Build_${{ github.run_number }}
-          path: ServerVideoCreator\dist\
+          path: dist\
