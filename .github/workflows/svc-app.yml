@@ -10,31 +10,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: "Debug: Show current directory and files"
-        shell: cmd
-        run: |
-          echo Current directory: %CD%
-          dir /b
-
-      - name: Build with publish.bat
-        shell: cmd
+      - shell: cmd
         run: publish.bat
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: Build_${{ github.run_number }}
           path: dist\
