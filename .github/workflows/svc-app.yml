@@ -25,7 +25,7 @@ jobs:
 
             - name: Build executable
               run: |
-                pyinstaller --noconfirm --onefile --name ServerVideoCreator main.py
+                pyinstaller --noconfirm --onefile --name ServerVideoCreator --paths=. main.py
                 copy ffmpeg.exe dist\
                 copy proxy.config.json dist\
 
