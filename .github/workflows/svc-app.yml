@@ -1,6 +1,6 @@
 name: Build ServerVideoCreator
 
-on: 
+on:
   push:
     branches: [main]
   workflow_dispatch:
@@ -23,16 +23,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: List files (debugging)
+      - name: Print Python search paths (for debugging)
         run: |
-          dir
-          echo ------------------
-          type main.py
-          echo ------------------
-          dir /b *.py
+          python -c "import sys; print('Python search paths:', sys.path)"
 
-      - name: Build executable
-        run: .\publish.bat
+      - name: Show file structure (debug)
+        shell: cmd
+        run: |
+          cd /d %GITHUB_WORKSPACE%
+          dir /b
+
+      - name: Build executable with PYTHONPATH set
+        shell: cmd
+        run: |
+          cd /d %GITHUB_WORKSPACE%
+          set PYTHONPATH=%CD%
+          pyinstaller --noconfirm --onefile --name ServerVideoCreator --paths=%CD% main.py
+          copy ffmpeg.exe dist\
+          copy proxy.config.json dist\
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
