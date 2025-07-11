@@ -3,9 +3,9 @@ from tkinter import *
 from tkinter import ttk
 import yt_dlp
 
-from svc.audio import Audio
-from svc.video import Video
-from svc.util import fetch_video_info, get_proxy
+from audio import Audio
+from video import Video
+from util import fetch_video_info, get_proxy
 
 # Globals specific to download tab
 video_url = ""
