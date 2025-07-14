@@ -3,8 +3,8 @@ from tkinter import *
 from tkinter import ttk
 import yt_dlp
 
-from audio import Audio
-from video import Video
+from models.audio import Audio
+from models.video import Video
 from util import fetch_video_info, get_proxy
 
 # Globals specific to download tab
