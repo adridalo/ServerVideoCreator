@@ -213,43 +213,44 @@ def download_video():
     try:
         with yt_dlp.YoutubeDL(params=ydl_options) as ydl:
             ydl.download(video_url)
-
-        downloaded_file = None
-        for ext in ['mp4', 'mkv', 'webm', 'flv', 'avi']:
-            candidate = f"{sanitized_title}.{ext}"
-            if os.path.exists(candidate):
-                downloaded_file = candidate
-                break
-
-        if downloaded_file is None:
-            finished_downloading_text.config(text="Downloaded file not found", foreground="red")
-            finished_downloading_text.grid()
-            return
-        
-        info = DownloadedVideoInfo.get_video_info(downloaded_file)
-        if info is None:
-            finished_downloading_text.config(text="Could not get info", foreground="red")
-            finished_downloading_text.grid()
-            return
-        
-        height = info.resolution[0]
-        fps = info.fps
-
-        pretty_res = DownloadedVideoInfo._get_pretty_resolution(height, fps, include_fps=False)
-
-        target_folder = os.path.join("raw_videos", pretty_res, str(fps))
-        os.makedirs(target_folder, exist_ok=True)
-
-        target_path = os.path.join(target_folder, os.path.basename(downloaded_file))
-        shutil.move(downloaded_file, target_path)
-
-        finished_downloading_text.config(text=f"Downloaded successfully", foreground="green")
-
+            move_video_to_folder(sanitized_title)
     except Exception as e:
         finished_downloading_text.config(text=f"Something went wrong with the download: {e}", foreground="red")
 
     finished_downloading_text.grid()
     open_folder_button.grid()
+
+def move_video_to_folder(title):
+    downloaded_file = None
+    for ext in ['mp4', 'mkv', 'webm', 'flv', 'avi']:
+        candidate = f"{title}.{ext}"
+        if os.path.exists(candidate):
+            downloaded_file = candidate
+            break
+
+    if downloaded_file is None:
+        finished_downloading_text.config(text="Downloaded file not found", foreground="red")
+        finished_downloading_text.grid()
+        return
+    
+    info = DownloadedVideoInfo.get_video_info(downloaded_file)
+    if info is None:
+        finished_downloading_text.config(text="Could not get info", foreground="red")
+        finished_downloading_text.grid()
+        return
+    
+    height = info.resolution[0]
+    fps = info.fps
+
+    pretty_res = DownloadedVideoInfo._get_pretty_resolution(height, fps, include_fps=False)
+
+    target_folder = os.path.join("raw_videos", pretty_res, str(fps))
+    os.makedirs(target_folder, exist_ok=True)
+
+    target_path = os.path.join(target_folder, os.path.basename(downloaded_file))
+    shutil.move(downloaded_file, target_path)
+
+    finished_downloading_text.config(text=f"Downloaded successfully", foreground="green")
 
 def get_format_from_format_string():
     selected_video_text = resolutions_combobox.get()
@@ -278,4 +279,4 @@ def get_format_from_format_string():
 
 def open_folder():
     import os
-    os.startfile(os.path.join(".", "raw_videos"))
+    os.startfile("raw_videos")
