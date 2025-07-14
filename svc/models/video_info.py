@@ -8,13 +8,13 @@ class DownloadedVideoInfo:
         self.resolution = resolution
         self.fps = fps
 
-    def _get_pretty_resolution(resolution_height, frame_rate):
+    def _get_pretty_resolution(resolution_height, frame_rate, include_fps=True):
         rounded_fps = math.ceil(frame_rate)
 
         if resolution_height == 1080:
-            return f"HD{rounded_fps}"
+            return f"HD{rounded_fps if include_fps else ""}"
         elif resolution_height == 3840 or resolution_height == 4096:
-            return f"4K{rounded_fps}"
+            return f"4K{rounded_fps if include_fps else ""}"
         else:
             return f"{resolution_height}p"
 

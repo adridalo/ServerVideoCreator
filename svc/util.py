@@ -18,7 +18,7 @@ def get_proxy():
     
     return ""
     
-def fetch_video_info(url):
+def yt_fetch_video_info(url):
     ydl_options = {
         "proxy": get_proxy(),
         "listformats": True,

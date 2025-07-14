@@ -1,11 +1,14 @@
 import os
+import shutil
+import time
 from tkinter import *
 from tkinter import ttk
 import yt_dlp
 
 from svc.models.audio import Audio
 from svc.models.video import Video
-from svc.util import fetch_video_info, get_proxy
+from svc.util import yt_fetch_video_info, get_proxy
+from svc.models.video_info import DownloadedVideoInfo
 
 # Globals specific to download tab
 video_url = ""
@@ -99,7 +102,7 @@ def generate_resolutions():
         return
 
     video_url = url_entry.get()
-    video_info = fetch_video_info(video_url)
+    video_info = yt_fetch_video_info(video_url)
 
     for fmt in video_info.get("formats", []):
         if fmt.get("vcodec") == "none":
@@ -138,7 +141,7 @@ def generate_resolutions():
 
 
 def generate_audio():
-    video_info = fetch_video_info(video_url)
+    video_info = yt_fetch_video_info(video_url)
 
     for fmt in video_info.get("formats", []):
         current_format = fmt.get("resolution")
@@ -163,6 +166,7 @@ def generate_audio():
 
 def on_resolution_selected(event):
     global is_video_selected
+
     selected = resolutions_combobox.get()
     if selected == "---":
         resolution_label.config(text="No resolution selected")
@@ -174,6 +178,7 @@ def on_resolution_selected(event):
 
 def on_audio_selected(event):
     global is_audio_selected
+
     selected = audio_combobox.get()
     if selected == "---":
         audio_label.config(text="No audio selected")
@@ -193,9 +198,10 @@ def download_video():
     global dl_row_index
     video_format, audio_format = get_format_from_format_string()
 
-    video_info = fetch_video_info(video_url)
-    raw_title = video_info["title"]
-    sanitized_title = raw_title.replace(" ", "")
+    yt_video_info = yt_fetch_video_info(video_url)
+    raw_title = yt_video_info["title"]
+    import re
+    sanitized_title = re.sub(r'[^A-Za-z0-9]', '', raw_title)
 
     ydl_options = {
         "proxy": get_proxy(),
@@ -204,12 +210,43 @@ def download_video():
         "restrictfilenames": True
     }
 
-    with yt_dlp.YoutubeDL(params=ydl_options) as ydl:
-        try:
+    try:
+        with yt_dlp.YoutubeDL(params=ydl_options) as ydl:
             ydl.download(video_url)
-            finished_downloading_text.config(text="Download completed!", foreground="green")
-        except Exception:
-            finished_downloading_text.config(text="Something went wrong with the download", foreground="red")
+
+        downloaded_file = None
+        for ext in ['mp4', 'mkv', 'webm', 'flv', 'avi']:
+            candidate = f"{sanitized_title}.{ext}"
+            if os.path.exists(candidate):
+                downloaded_file = candidate
+                break
+
+        if downloaded_file is None:
+            finished_downloading_text.config(text="Downloaded file not found", foreground="red")
+            finished_downloading_text.grid()
+            return
+        
+        info = DownloadedVideoInfo.get_video_info(downloaded_file)
+        if info is None:
+            finished_downloading_text.config(text="Could not get info", foreground="red")
+            finished_downloading_text.grid()
+            return
+        
+        height = info.resolution[0]
+        fps = info.fps
+
+        pretty_res = DownloadedVideoInfo._get_pretty_resolution(height, fps, include_fps=False)
+
+        target_folder = os.path.join("raw_videos", pretty_res, str(fps))
+        os.makedirs(target_folder, exist_ok=True)
+
+        target_path = os.path.join(target_folder, os.path.basename(downloaded_file))
+        shutil.move(downloaded_file, target_path)
+
+        finished_downloading_text.config(text=f"Downloaded successfully", foreground="green")
+
+    except Exception as e:
+        finished_downloading_text.config(text=f"Something went wrong with the download: {e}", foreground="red")
 
     finished_downloading_text.grid()
     open_folder_button.grid()
@@ -241,4 +278,4 @@ def get_format_from_format_string():
 
 def open_folder():
     import os
-    os.startfile(".")
+    os.startfile(os.path.join(".", "raw_videos"))
