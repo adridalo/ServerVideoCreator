@@ -2,7 +2,7 @@ from pathlib import Path
 import subprocess
 from tkinter import W, Button, IntVar, Label, Scale, filedialog, ttk
 
-from models.video_info import DownloadedVideoInfo
+from svc.models.video_info import DownloadedVideoInfo
 
 convert_tab_ref = None
 cv_row_index = 0

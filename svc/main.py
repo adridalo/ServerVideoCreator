@@ -1,7 +1,7 @@
 from tkinter import Frame, Tk, ttk
 
-from convert import setup_convert_tab
-from download import setup_download_tab
+from svc.convert import setup_convert_tab
+from svc.download import setup_download_tab
 
 
 def main():
