@@ -13,7 +13,7 @@ class DownloadedVideoInfo:
 
         if resolution_height == 1080:
             return f"HD{rounded_fps if include_fps else ""}"
-        elif resolution_height == 3840 or resolution_height == 4096:
+        elif resolution_height == 2160:
             return f"4K{rounded_fps if include_fps else ""}"
         else:
             return f"{resolution_height}p"
@@ -35,7 +35,7 @@ class DownloadedVideoInfo:
 
             rate = video_stream.get("avg_frame_rate", "0/0")
             num, denom = map(int, rate.split("/"))
-            frame_rate = math.ceil(num / denom) if denom != 0 else 0
+            frame_rate = round(num / denom) if denom != 0 else 0
 
             return DownloadedVideoInfo(
                 video,
