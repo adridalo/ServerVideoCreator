@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+import shutil
 import subprocess
 from tkinter import W, Button, IntVar, Label, Scale, filedialog, ttk
 
@@ -177,5 +179,16 @@ def convert_videos():
                 command += ["-bf", "0"]
 
             subprocess.run(command, check=True)
+
+            height = path_video_info.resolution[0]
+            fps = path_video_info.fps
+
+            pretty_res = DownloadedVideoInfo._get_pretty_resolution(height, fps, include_fps=False)
+
+            target_folder = os.path.join("converted", pretty_res, str(fps))
+            os.makedirs(target_folder, exist_ok=True)
+
+            target_path = os.path.join(target_folder, os.path.basename(input_path))
+            shutil.move(input_path, target_path)
     else:
         print("No files selected")

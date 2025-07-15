@@ -244,7 +244,7 @@ def move_video_to_folder(title):
 
     pretty_res = DownloadedVideoInfo._get_pretty_resolution(height, fps, include_fps=False)
 
-    target_folder = os.path.join("raw_videos", pretty_res, str(fps))
+    target_folder = os.path.join("raw", pretty_res, str(fps))
     os.makedirs(target_folder, exist_ok=True)
 
     target_path = os.path.join(target_folder, os.path.basename(downloaded_file))
@@ -279,4 +279,4 @@ def get_format_from_format_string():
 
 def open_folder():
     import os
-    os.startfile("raw_videos")
+    os.startfile("raw")
