@@ -17,6 +17,7 @@ selected_audio_codec = None
 select_files_button = None
 file_list_label = None
 file_list_text = None
+clear_paths_button = None
 convert_button = None
 compression_dropbox = None
 compression_dropbox_label = None
@@ -34,7 +35,7 @@ def setup_convert_tab(tab):
     global convert_tab_ref, cv_row_index, select_files_button, convert_button, compression_dropbox, compression_dropbox_label
     global color_space_dropbox, color_space_dropbox_label, bit_rate_scale, bit_rate_scale_label, audio_codec_label
     global audio_codec_dropbox, b_frames_checkbox, b_frames_checkbox_label, b_frames_value
-    global file_list_label, file_list_text
+    global file_list_label, file_list_text, clear_paths_button
 
     convert_tab_ref = tab
     cv_row_index = 0
@@ -42,10 +43,11 @@ def setup_convert_tab(tab):
     select_files_button = Button(tab, text="Select files to convert", command=select_files)
     select_files_button.grid(row=cv_row_index, column=0, columnspan=2, sticky=W, padx=10, pady=5)
     cv_row_index += 1
-
     
     file_list_label = Label(tab, text="Selected video files:", anchor='w', justify='left')
     file_list_text = Text(tab, height=6, width=70, wrap="word", state="disabled")
+
+    clear_paths_button = Button(tab, text="Clear all video paths", command=on_clear_path)
 
     compression_dropbox_label = Label(tab, text="Select compression: ")
     compression_dropbox = ttk.Combobox(tab, values=["---", "H264", "H265"])
@@ -108,6 +110,18 @@ def on_audio_codec_selected(event):
 
     will_convert_button_appear()
 
+def on_clear_path():
+    global filepaths, file_list_text
+
+    filepaths.clear()
+
+    file_list_text.config(state='normal')
+    file_list_text.delete("1.0", "end")
+    file_list_text.config(state='disabled')
+
+    convert_button.grid_remove()
+    clear_paths_button.grid_remove()
+
 
 def will_convert_button_appear():
     if selected_compression and selected_color_space and selected_audio_codec:
@@ -119,7 +133,8 @@ def will_convert_button_appear():
 def select_files():
     global filepaths, cv_row_index
 
-    filepaths = filedialog.askopenfilenames(
+    if len(filepaths) != 0:
+        filepaths += filedialog.askopenfilenames(
         title="Select videos",
         initialdir=".",
         filetypes=[
@@ -129,6 +144,17 @@ def select_files():
             ("WebM Videos", "*.webm"),
         ]
     )
+    else:
+        filepaths = list(filedialog.askopenfilenames(
+            title="Select videos",
+            initialdir=".",
+            filetypes=[
+                ("All files", "*.*"),
+                ("MP4 Videos", "*.mp4"),
+                ("MKV Videos", "*.mkv"),
+                ("WebM Videos", "*.webm"),
+            ]
+        ))
 
     if filepaths:
         file_list_label.grid(row=cv_row_index, column=0, columnspan=2, sticky='w', padx=10, pady=(10, 0))
@@ -142,6 +168,9 @@ def select_files():
             file_list_text.insert("end", f"• {os.path.basename(path)} ({file_res})\n")
         file_list_text.config(state='disabled')
         file_list_text.grid(row=cv_row_index, column=0, columnspan=2, sticky='w', padx=10, pady=(0, 10))
+        cv_row_index += 1
+
+        clear_paths_button.grid(row=cv_row_index, column=0, columnspan=2, sticky='w', padx=10, pady=(10, 0))
         cv_row_index += 1
 
         compression_dropbox_label.grid(row=cv_row_index, column=0, sticky=W, padx=10, pady=5)
