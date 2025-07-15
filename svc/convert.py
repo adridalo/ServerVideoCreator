@@ -167,16 +167,21 @@ def select_files():
         will_convert_button_appear()
 
 
-def determine_overlay_text_size(resolution):
-    if resolution == 2160:
+def determine_overlay_text_size(res_height):
+    if res_height == 2160:
         return 200
-    elif resolution == 1080:
+    elif res_height == 1080:
         return 100
-    elif resolution == 720:
+    elif res_height == 720:
         return 75
-    elif resolution == 480:
+    elif res_height == 480:
         return 50
-    return 30
+    elif res_height == 360:
+        return 30
+    elif res_height == 240:
+        return 15
+    else:
+        return 10
 
 
 def calculate_goc(fps):
@@ -230,5 +235,5 @@ def convert_videos():
         target_folder = os.path.join("converted", pretty_res, str(fps))
         os.makedirs(target_folder, exist_ok=True)
 
-        target_path = os.path.join(target_folder, os.path.basename(input_path))
-        shutil.move(input_path, target_path)
+        target_path = os.path.join(target_folder, os.path.basename(output_path))
+        shutil.move(output_path, target_path)
