@@ -4,6 +4,7 @@ import time
 from tkinter import *
 from tkinter import ttk
 import yt_dlp
+import re
 
 from svc.models.audio import Audio
 from svc.models.video import Video
@@ -121,7 +122,7 @@ def generate_resolutions():
         video_formats.append(current_video_obj)
 
     pretty_video_formats = ["---"]
-    for i in range(1, len(video_formats) - 1):
+    for i in range(1, len(video_formats)):
         fmt = video_formats[i]
         pretty_video_formats.append(
             f"({fmt.id}){fmt.resolution} {fmt.fps} {fmt.extension} via {fmt.protocol}"
@@ -129,6 +130,7 @@ def generate_resolutions():
 
     resolutions_combobox["values"] = pretty_video_formats
     resolutions_combobox.current(0)
+    resolutions_combobox.set("---")
     resolutions_combobox.grid()
     resolution_label.config(text="No resolution selected!")
 
@@ -150,17 +152,26 @@ def generate_audio():
             audio_formats.append(current_audio_obj)
 
     pretty_audio_formats = ["---"]
-    for i in range(1, len(audio_formats) - 1):
+    for i in range(1, len(audio_formats)):
         pretty_audio_formats.append(
             f"{audio_formats[i].extension} via {audio_formats[i].protocol} at {audio_formats[i].asr if audio_formats[i].asr else 'n/a'}Hz ~{audio_formats[i].filesize if audio_formats[i].filesize else 'n/a'}B"
         )
 
     audio_combobox["values"] = pretty_audio_formats
     audio_combobox.current(0)
+    audio_combobox.set("---")
     audio_combobox.grid()
     audio_label.config(text="No audio selected!")
 
-    fetched_video_info_text.config(text=f"Quiried video: {video_info['title']}")
+    title = video_info.get("title", "Unknown title")
+    duration = video_info.get("duration_string", "Unknown duration") or video_info.get("duration", "Unknown duration")
+
+    formatted_info = (
+        f"Title: {title}\n"
+        f"Duration: {duration}\n"
+    )
+
+    fetched_video_info_text.config(text=formatted_info, justify="left", anchor="w", foreground="black")
     fetched_video_info_text.grid(row=2, column=0, columnspan=2, sticky=W, padx=10, pady=5)
 
 
@@ -200,7 +211,6 @@ def download_video():
 
     yt_video_info = yt_fetch_video_info(video_url)
     raw_title = yt_video_info["title"]
-    import re
     sanitized_title = re.sub(r'[^A-Za-z0-9]', '', raw_title)
 
     ydl_options = {
@@ -278,5 +288,4 @@ def get_format_from_format_string():
     return video_obj, audio_obj
 
 def open_folder():
-    import os
     os.startfile("raw")
