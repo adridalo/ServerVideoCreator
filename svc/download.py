@@ -28,58 +28,53 @@ download_button = None
 finished_downloading_text = None
 open_folder_button = None
 download_tab_ref = None
+fetched_video_info_text = None
 
 def setup_download_tab(tab):
     global url_entry, resolutions_combobox, resolution_label
     global audio_combobox, audio_label, download_button
     global finished_downloading_text, open_folder_button
     global download_tab_ref, dl_row_index
+    global fetched_video_info_text
 
     download_tab_ref = tab
 
-    # Row 0
     Label(tab, text="Enter YouTube URL:").grid(row=0, column=0, sticky=W, padx=10, pady=5)
     url_entry = Entry(tab, width=100)
     url_entry.grid(row=0, column=1, padx=10, pady=5)
 
-    # Row 1
     fetch_button = Button(tab, text="Get Info", command=generate_resolutions)
     fetch_button.grid(row=1, column=0, sticky=W, padx=10, pady=5)
 
-    # Row 2
+    fetched_video_info_text = Label(tab, text="")
+    fetched_video_info_text.grid_forget()
+
     resolutions_combobox = ttk.Combobox(tab, values=video_formats, width=35)
-    resolutions_combobox.grid(row=2, column=1, sticky=W, padx=10, pady=5)
+    resolutions_combobox.grid(row=3, column=1, sticky=W, padx=10, pady=5)
     resolutions_combobox.grid_remove()
     resolutions_combobox.bind("<<ComboboxSelected>>", on_resolution_selected)
 
-    # Row 3
     resolution_label = Label(tab, text="", anchor=W, width=50)
-    resolution_label.grid(row=3, column=0, columnspan=2, sticky=W, padx=10, pady=5)
+    resolution_label.grid(row=4, column=0, columnspan=2, sticky=W, padx=10, pady=5)
 
-    # Row 4
     audio_combobox = ttk.Combobox(tab, values=audio_formats, width=35)
-    audio_combobox.grid(row=4, column=1, sticky=W, padx=10, pady=5)
+    audio_combobox.grid(row=5, column=1, sticky=W, padx=10, pady=5)
     audio_combobox.grid_remove()
     audio_combobox.bind("<<ComboboxSelected>>", on_audio_selected)
 
-    # Row 5
     audio_label = Label(tab, text="", anchor=W, width=50)
-    audio_label.grid(row=5, column=0, columnspan=2, sticky=W, padx=10, pady=5)
+    audio_label.grid(row=6, column=0, columnspan=2, sticky=W, padx=10, pady=5)
 
-    # Now set dl_row_index dynamically to the next empty row after row 5
-    dl_row_index = 6
+    dl_row_index = 7
 
-    # Setup download button (hidden initially)
     download_button = Button(tab, text="Download", command=download_video)
     download_button.grid(row=dl_row_index, column=0, columnspan=2, sticky=W, padx=10, pady=5)
     download_button.grid_remove()
 
-    # Setup finished label
     finished_downloading_text = Label(tab, text="", anchor=W, width=50)
     finished_downloading_text.grid(row=dl_row_index + 1, column=0, columnspan=2, sticky=W, padx=10, pady=5)
     finished_downloading_text.grid_remove()
 
-    # Setup open folder button
     open_folder_button = Button(tab, text="Open Containing Folder", command=open_folder)
     open_folder_button.grid(row=dl_row_index + 2, column=0, columnspan=2, sticky=W, padx=10, pady=5)
     open_folder_button.grid_remove()
@@ -141,6 +136,8 @@ def generate_resolutions():
 
 
 def generate_audio():
+    global fetched_video_info_text
+
     video_info = yt_fetch_video_info(video_url)
 
     for fmt in video_info.get("formats", []):
@@ -162,6 +159,9 @@ def generate_audio():
     audio_combobox.current(0)
     audio_combobox.grid()
     audio_label.config(text="No audio selected!")
+
+    fetched_video_info_text.config(text=f"Quiried video: {video_info['title']}")
+    fetched_video_info_text.grid(row=2, column=0, columnspan=2, sticky=W, padx=10, pady=5)
 
 
 def on_resolution_selected(event):
