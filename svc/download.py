@@ -50,7 +50,7 @@ def setup_download_tab(tab):
     fetched_video_info_text = Label(tab, text="")
     fetched_video_info_text.grid_forget()
 
-    resolutions_combobox = ttk.Combobox(tab, values=video_formats, width=35)
+    resolutions_combobox = ttk.Combobox(tab, values=video_formats, width=50)
     resolutions_combobox.grid(row=3, column=1, sticky=W, padx=10, pady=5)
     resolutions_combobox.grid_remove()
     resolutions_combobox.bind("<<ComboboxSelected>>", on_resolution_selected)
@@ -58,7 +58,7 @@ def setup_download_tab(tab):
     resolution_label = Label(tab, text="", anchor=W, width=50)
     resolution_label.grid(row=4, column=0, columnspan=2, sticky=W, padx=10, pady=5)
 
-    audio_combobox = ttk.Combobox(tab, values=audio_formats, width=35)
+    audio_combobox = ttk.Combobox(tab, values=audio_formats, width=50)
     audio_combobox.grid(row=5, column=1, sticky=W, padx=10, pady=5)
     audio_combobox.grid_remove()
     audio_combobox.bind("<<ComboboxSelected>>", on_audio_selected)
@@ -125,7 +125,7 @@ def generate_resolutions():
     for i in range(1, len(video_formats)):
         fmt = video_formats[i]
         pretty_video_formats.append(
-            f"({fmt.id}){fmt.resolution} {fmt.fps} {fmt.extension} via {fmt.protocol}"
+            f"({fmt.id}) {fmt.resolution} {fmt.fps} {fmt.extension} via {fmt.protocol}"
         )
 
     resolutions_combobox["values"] = pretty_video_formats
@@ -154,7 +154,7 @@ def generate_audio():
     pretty_audio_formats = ["---"]
     for i in range(1, len(audio_formats)):
         pretty_audio_formats.append(
-            f"{audio_formats[i].extension} via {audio_formats[i].protocol} at {audio_formats[i].asr if audio_formats[i].asr else 'n/a'}Hz ~{audio_formats[i].filesize if audio_formats[i].filesize else 'n/a'}B"
+            f"({audio_formats[i].id}) {audio_formats[i].extension} via {audio_formats[i].protocol} at {audio_formats[i].asr if audio_formats[i].asr else 'n/a'}Hz ~{to_mb(audio_formats[i].filesize)}"
         )
 
     audio_combobox["values"] = pretty_audio_formats
@@ -272,7 +272,7 @@ def get_format_from_format_string():
     for vf in video_formats:
         if vf == "---":
             continue
-        pretty_format = f"({vf.id}){vf.resolution} {vf.fps} {vf.extension} via {vf.protocol}"
+        pretty_format = f"({vf.id}) {vf.resolution} {vf.fps} {vf.extension} via {vf.protocol}"
         if pretty_format == selected_video_text:
             video_obj = vf
             break
@@ -280,12 +280,17 @@ def get_format_from_format_string():
     for af in audio_formats:
         if af == "---":
             continue
-        pretty_format = f"{af.extension} via {af.protocol} at {af.asr if af.asr else 'n/a'}Hz ~{af.filesize if af.filesize else 'n/a'}B"
+        pretty_format = f"({af.id}) {af.extension} via {af.protocol} at {af.asr if af.asr else 'n/a'}Hz ~{to_mb(af.filesize)}"
         if pretty_format == selected_audio_text:
             audio_obj = af
             break
 
     return video_obj, audio_obj
+
+def to_mb(bytes):
+    if not bytes:
+        return "n/a"
+    return f"{bytes / 1_000_000:.2f} MB"
 
 def open_folder():
     os.startfile("raw")
