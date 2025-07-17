@@ -1,6 +1,5 @@
 import os
 import shutil
-import time
 from tkinter import *
 from tkinter import ttk
 import yt_dlp
@@ -225,7 +224,7 @@ def download_video():
             ydl.download(video_url)
             move_video_to_folder(sanitized_title)
     except Exception as e:
-        finished_downloading_text.config(text=f"Something went wrong with the download: {e}", foreground="red")
+        finished_downloading_text.config(text=f"Something went wrong with the download: {e}", foreground="red", wraplength=200)
 
     finished_downloading_text.grid()
     open_folder_button.grid()
@@ -245,7 +244,7 @@ def move_video_to_folder(title):
     
     info = DownloadedVideoInfo.get_video_info(downloaded_file)
     if info is None:
-        finished_downloading_text.config(text="Could not get info", foreground="red")
+        finished_downloading_text.config(text="Could not get info", foreground="red", wraplength=100)
         finished_downloading_text.grid()
         return
     
@@ -260,7 +259,7 @@ def move_video_to_folder(title):
     target_path = os.path.join(target_folder, os.path.basename(downloaded_file))
     shutil.move(downloaded_file, target_path)
 
-    finished_downloading_text.config(text=f"Downloaded successfully", foreground="green")
+    finished_downloading_text.config(text=f"Downloaded successfully", foreground="green", wraplength=100)
 
 def get_format_from_format_string():
     selected_video_text = resolutions_combobox.get()
