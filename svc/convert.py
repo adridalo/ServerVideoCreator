@@ -247,13 +247,15 @@ def convert_videos():
             "-c:v", f"libx{convert_compression}",
             "-g", f"{calculate_goc(path_video_info.fps)}",
             "-b:v", f"{convert_bit_rate}M",
+            "-bf", "0",
             "-ac", "2",
             "-vf", vf_filter,
             str(output_path)
         ]
 
-        if not convert_b_frames:
-            command += ["-bf", "0"]
+        if convert_b_frames:
+            for _ in range(2):
+                del command[11]
 
         subprocess.run(command, check=True)
 
