@@ -179,11 +179,13 @@ def download_video():
         yt_info = yt_fetch_video_info(video_url)
         title = re.sub(r'[^A-Za-z0-9]', '', yt_info.get("title", "video"))
         ydl_opts = {
-            "proxy": get_proxy(),
             "format": f"{video_format.id}+{audio_format.id}",
             "outtmpl": f"{title}.%(ext)s",
             "restrictfilenames": True
         }
+
+        if get_proxy() != "":
+            ydl_opts["proxy"] = get_proxy()
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])

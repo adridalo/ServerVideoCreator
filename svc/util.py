@@ -15,17 +15,21 @@ def get_proxy():
             with open(config_path, 'r') as f:
                 data = json.load(f)
                 return data.get("proxy", "")
+        else:
+            break
     
     return ""
     
 def yt_fetch_video_info(url):
     ydl_options = {
-        "proxy": get_proxy(),
         "listformats": True,
         "quiet": True,
         "forcejson": True,
         "dump_single_json": True
     }
+
+    if get_proxy() != "":
+        ydl_options["proxy"] = get_proxy()
 
     with yt_dlp.YoutubeDL(params=ydl_options) as ydl:
         video_info = ydl.extract_info(url, download=False)
