@@ -6,21 +6,15 @@ supported_formats = ["mp4", "mkv", "webm", "flv", "avi"]
 def get_proxy():
     import sys, os, json
 
-    base_paths = [os.path.abspath(".")]
+    base_path = os.path.abspath(".")
 
-    if getattr(sys, 'frozen', False):
-        base_paths.insert(0, sys._MEIPASS)
-
-    for base_path in base_paths:
-        config_path = os.path.join(base_path, "proxy.config.json")
-        if os.path.exists(config_path):
-            with open(config_path, 'r') as f:
-                data = json.load(f)
-                return data.get("proxy", "")
-        else:
-            break
-    
-    return ""
+    config_path = os.path.join(base_path, "proxy.config.json")
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            data = json.load(f)
+            return data.get("proxy", "")
+    else:
+        return ""
     
 def yt_fetch_video_info(url):
     ydl_options = {
