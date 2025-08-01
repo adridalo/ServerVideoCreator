@@ -1,10 +1,12 @@
 import os
+import pathlib
 import shutil
 import subprocess
 from pathlib import Path
 from tkinter import W, Button, IntVar, Label, Scale, Text, filedialog, ttk
 
 from svc.models.video_info import DownloadedVideoInfo
+from svc.util import supported_formats
 
 # UI and state references
 convert_tab_ref = None
@@ -19,7 +21,8 @@ selected_audio_codec = None
 
 # UI Elements
 def_ui = lambda: {
-    "select_files_button": None,
+    "select_file_button": None,
+    "select_directory_button": None,
     "file_list_label": None,
     "file_list_text": None,
     "clear_paths_button": None,
@@ -45,8 +48,11 @@ def setup_convert_tab(tab):
     b_frames_value = IntVar()
     ui.update(def_ui())
 
-    ui["select_files_button"] = Button(tab, text="Select files to convert", command=select_files)
-    ui["select_files_button"].grid(row=cv_row_index, column=0, columnspan=2, sticky=W, padx=10, pady=5)
+    ui["select_file_button"] = Button(tab, text="Select video to convert", command=select_files)
+    ui["select_file_button"].grid(row=cv_row_index, column=0, sticky=W, padx=10, pady=5)
+
+    ui["select_directory_button"] = Button(tab, text="Select directory to convert", command=select_directory)
+    ui["select_directory_button"].grid(row=cv_row_index, column=1, sticky=W, padx=10, pady=5)
     cv_row_index += 1
 
     ui["file_list_label"] = Label(tab, text="Selected video files:", anchor='w', justify='left')
@@ -114,16 +120,33 @@ def will_convert_button_appear():
 
 
 def select_files():
-    global filepaths, cv_row_index
-    new_files = list(filedialog.askopenfilenames(
+    global filepaths
+    video_file_path = list(filedialog.askopenfilenames(
         title="Select videos",
         initialdir=".",
         filetypes=[("All files", "*.*"), ("MP4 Videos", "*.mp4"), ("MKV Videos", "*.mkv"), ("WebM Videos", "*.webm")]
     ))
-    if new_files:
-        filepaths.extend(new_files)
-        display_selected_files()
+    if video_file_path:
+        if os.path.splitext(video_file_path[0])[1][1:] in supported_formats:
+            filepaths.extend(video_file_path)
+            display_selected_files()
 
+def select_directory():
+    global filepaths
+    video_files_path = list(filedialog.askdirectory(
+        title="Select videos",
+        initialdir="."
+    ))
+    video_files_path = "".join(video_files_path)
+    if video_files_path:
+        files = []
+        for root, _, filenames in os.walk(video_files_path):
+            for filename in filenames:
+                generated_path = os.path.join(root, filename)
+                if os.path.splitext(filename)[1][1:] in supported_formats:
+                    files.append(generated_path)
+        filepaths.extend(files)
+        display_selected_files()
 
 def display_selected_files():
     global cv_row_index
