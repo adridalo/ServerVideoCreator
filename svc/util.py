@@ -1,6 +1,8 @@
 import yt_dlp
 
 
+supported_formats = ["mp4", "mkv", "webm", "flv", "avi"]
+
 def get_proxy():
     import sys, os, json
 

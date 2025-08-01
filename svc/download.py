@@ -7,7 +7,7 @@ import yt_dlp
 from svc.models.audio import Audio
 from svc.models.video import Video
 from svc.models.video_info import DownloadedVideoInfo
-from svc.util import yt_fetch_video_info, get_proxy
+from svc.util import yt_fetch_video_info, get_proxy, supported_formats
 
 # State
 download_tab_ref = None
@@ -187,7 +187,7 @@ def download_video():
 
 
 def move_video_to_folder(title):
-    downloaded_file = next((f"{title}.{ext}" for ext in ["mp4", "mkv", "webm", "flv", "avi"] if os.path.exists(f"{title}.{ext}")), None)
+    downloaded_file = next((f"{title}.{ext}" for ext in supported_formats if os.path.exists(f"{title}.{ext}")), None)
     if not downloaded_file:
         ui["finished_downloading_text"].config(text="Downloaded file not found", foreground="red")
         return
