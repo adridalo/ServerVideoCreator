@@ -195,7 +195,7 @@ def convert_videos():
 
     for path in filepaths:
         info = DownloadedVideoInfo.get_video_info(path)
-        res_str = DownloadedVideoInfo._get_pretty_resolution(info.resolution[0], info.fps)
+        res_str = DownloadedVideoInfo._get_pretty_resolution(info.resolution[0], info.fps, False)
         overlay_size = determine_overlay_text_size(info.resolution[0])
 
         input_path = Path(path)
@@ -224,6 +224,6 @@ def convert_videos():
 
         subprocess.run(cmd, check=True)
 
-        target_dir = os.path.join("converted", res_str, str(info.fps))
+        target_dir = os.path.join("converted", res_str, str(info.fps)) if not b_frames else os.path.join("converted", res_str, str(info.fps), "BFrames")
         os.makedirs(target_dir, exist_ok=True)
         shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
