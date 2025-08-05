@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import threading
 from tkinter import W, Button, Label, Entry, Text, filedialog, ttk
 import yt_dlp
 
@@ -27,7 +28,7 @@ def_ui = lambda: {
     "audio_combobox": None,
     "audio_label": None,
     "download_button": None,
-    "finished_downloading_text": None,
+    "download_status_text": None,
     "open_folder_button": None
 }
 ui = def_ui()
@@ -68,9 +69,9 @@ def setup_download_tab(tab):
     ui["download_button"].grid(row=7, column=0, columnspan=2, sticky=W, padx=10, pady=5)
     ui["download_button"].grid_remove()
 
-    ui["finished_downloading_text"] = Label(tab, text="", anchor="w", width=50)
-    ui["finished_downloading_text"].grid(row=8, column=0, columnspan=2, sticky=W, padx=10, pady=5)
-    ui["finished_downloading_text"].grid_remove()
+    ui["download_status_text"] = Label(tab, text="", anchor="w", width=50)
+    ui["download_status_text"].grid(row=8, column=0, columnspan=2, sticky=W, padx=10, pady=5)
+    ui["download_status_text"].grid_remove()
 
     ui["open_folder_button"] = Button(tab, text="Open Containing Folder", command=open_folder)
     ui["open_folder_button"].grid(row=9, column=0, columnspan=2, sticky=W, padx=10, pady=5)
@@ -158,8 +159,11 @@ def check_video_audio_selection():
     else:
         ui["download_button"].grid_remove()
 
-
 def download_video():
+    thread = threading.Thread(target=_download_video_thread)
+    thread.start()
+
+def _download_video_thread():
     video_format, audio_format = get_format_from_format_string()
     try:
         yt_info = yt_fetch_video_info(video_url)
@@ -174,30 +178,32 @@ def download_video():
         if proxy:
             ydl_opts["proxy"] = proxy
 
+        ui["download_status_text"].grid()
+        ui["download_status_text"].config(text="Downloading...", foreground="orange")
+        
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
         move_video_to_folder(title)
-        ui["finished_downloading_text"].config(text="Downloaded successfully", foreground="green")
+        ui["download_status_text"].config(text="Downloaded successfully", foreground="green")
     except Exception as e:
-        ui["finished_downloading_text"].config(text=f"Download error: {e}", foreground="red", wraplength=200)
+        ui["download_status_text"].config(text=f"Download error: {e}", foreground="red", wraplength=200)
 
-    ui["finished_downloading_text"].grid()
     ui["open_folder_button"].grid()
 
 
 def move_video_to_folder(title):
     downloaded_file = next((f"{title}.{ext}" for ext in supported_formats if os.path.exists(f"{title}.{ext}")), None)
     if not downloaded_file:
-        ui["finished_downloading_text"].config(text="Downloaded file not found", foreground="red")
+        ui["download_status_text"].config(text="Downloaded file not found", foreground="red")
         return
 
     info = DownloadedVideoInfo.get_video_info(downloaded_file)
     if not info:
-        ui["finished_downloading_text"].config(text="Could not extract video info", foreground="red", wraplength=100)
+        ui["download_status_text"].config(text="Could not extract video info", foreground="red", wraplength=100)
         return
 
-    res = DownloadedVideoInfo._get_pretty_resolution(info.resolution[0], info.fps, include_fps=False)
+    res = DownloadedVideoInfo.get_pretty_resolution(info.resolution[0], info.fps, include_fps=False)
     target_folder = os.path.join("raw", res, str(info.fps))
     os.makedirs(target_folder, exist_ok=True)
     shutil.move(downloaded_file, os.path.join(target_folder, os.path.basename(downloaded_file)))
@@ -230,5 +236,5 @@ def reset_download_ui():
     is_video_selected = False
     is_audio_selected = False
     ui["download_button"].grid_remove()
-    ui["finished_downloading_text"].grid_remove()
+    ui["download_status_text"].grid_remove()
     ui["open_folder_button"].grid_remove()

@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 from pathlib import Path
+import threading
 from tkinter import W, Button, IntVar, Label, Scale, Text, filedialog, ttk
 
 from svc.models.video_info import DownloadedVideoInfo
@@ -36,7 +37,8 @@ def_ui = lambda: {
     "audio_codec_label": None,
     "audio_codec_dropbox": None,
     "b_frames_checkbox": None,
-    "b_frames_checkbox_label": None
+    "b_frames_checkbox_label": None,
+    "convert_status_text": None,
 }
 ui = def_ui()
 
@@ -79,6 +81,9 @@ def setup_convert_tab(tab):
 
     ui["b_frames_checkbox_label"] = Label(tab, text="Enable B-Frames")
     ui["b_frames_checkbox"] = ttk.Checkbutton(tab, variable=b_frames_value)
+
+    ui["convert_status_text"] = Label(tab, text="", anchor="w", width=50)
+    ui["convert_status_text"].grid_remove()
 
     ui["convert_button"] = Button(tab, text="Convert video(s)", command=convert_videos)
 
@@ -158,7 +163,7 @@ def display_selected_files():
     ui["file_list_text"].delete('1.0', 'end')
     for path in filepaths:
         info = DownloadedVideoInfo.get_video_info(path)
-        res = DownloadedVideoInfo._get_pretty_resolution(info.resolution[0], info.fps)
+        res = DownloadedVideoInfo.get_pretty_resolution(info.resolution[0], info.fps)
         ui["file_list_text"].insert("end", f"• {os.path.basename(path)} ({res})\n")
     ui["file_list_text"].config(state='disabled')
     ui["file_list_text"].grid(row=cv_row_index, column=0, columnspan=2, sticky='w', padx=10, pady=(0, 10))
@@ -184,8 +189,11 @@ def determine_overlay_text_size(res_height):
 def calculate_goc(fps):
     return int(fps * 1.5)
 
-
 def convert_videos():
+    thread = threading.Thread(target=_convert_videos_thread)
+    thread.start()
+
+def _convert_videos_thread():
     if not filepaths:
         print("No files selected")
         return
@@ -195,7 +203,7 @@ def convert_videos():
 
     for path in filepaths:
         info = DownloadedVideoInfo.get_video_info(path)
-        res_str = DownloadedVideoInfo._get_pretty_resolution(info.resolution[0], info.fps, False)
+        res_str = DownloadedVideoInfo.get_pretty_resolution(info.resolution[0], info.fps, False)
         overlay_size = determine_overlay_text_size(info.resolution[0])
 
         input_path = Path(path)
@@ -222,8 +230,12 @@ def convert_videos():
             cmd.pop(11)  # remove "-bf"
             cmd.pop(11)  # remove "0"
 
+        ui["convert_status_text"].grid()
+        ui["convert_status_text"].config(text="Converting...", foreground="orange")
         subprocess.run(cmd, check=True)
 
         target_dir = os.path.join("converted", res_str, str(info.fps)) if not b_frames else os.path.join("converted", res_str, str(info.fps), "BFrames")
         os.makedirs(target_dir, exist_ok=True)
         shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
+
+    ui["convert_status_text"].config(text=f"Successfully converted {len(filepaths)} video(s)!", foreground="green")
