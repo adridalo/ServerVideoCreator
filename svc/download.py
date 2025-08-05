@@ -17,6 +17,7 @@ video_formats = []
 audio_formats = []
 is_video_selected = False
 is_audio_selected = False
+downloaded_video_path = None
 
 # UI Element Registry
 def_ui = lambda: {
@@ -180,7 +181,7 @@ def _download_video_thread():
 
         ui["download_status_text"].grid()
         ui["download_status_text"].config(text="Downloading...", foreground="orange")
-        
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
@@ -193,6 +194,8 @@ def _download_video_thread():
 
 
 def move_video_to_folder(title):
+    global downloaded_video_path
+
     downloaded_file = next((f"{title}.{ext}" for ext in supported_formats if os.path.exists(f"{title}.{ext}")), None)
     if not downloaded_file:
         ui["download_status_text"].config(text="Downloaded file not found", foreground="red")
@@ -207,6 +210,7 @@ def move_video_to_folder(title):
     target_folder = os.path.join("raw", res, str(info.fps))
     os.makedirs(target_folder, exist_ok=True)
     shutil.move(downloaded_file, os.path.join(target_folder, os.path.basename(downloaded_file)))
+    downloaded_video_path = target_folder
 
 
 def get_format_from_format_string():
@@ -226,7 +230,7 @@ def to_mb(bytes_val):
 
 
 def open_folder():
-    os.startfile("raw")
+    os.startfile(downloaded_video_path)
 
 
 def reset_download_ui():
