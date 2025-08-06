@@ -16,7 +16,7 @@ class DownloadedVideoInfo:
         elif resolution_height == 2160:
             return f"4K{rounded_fps if include_fps else ""}"
         else:
-            return f"{resolution_height}p{rounded_fps if include_fps else ""}"
+            return f"{resolution_height}{f"p{rounded_fps}" if include_fps else ""}"
 
     def get_video_info(video):
         try:
