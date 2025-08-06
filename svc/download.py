@@ -167,6 +167,9 @@ def download_video():
 def _download_video_thread():
     video_format, audio_format = get_format_from_format_string()
     try:
+        ui["download_status_text"].grid()
+        ui["download_status_text"].config(text="Downloading...", foreground="orange")
+        ui["open_folder_button"].grid_forget()
         yt_info = yt_fetch_video_info(video_url)
         title = re.sub(r'[^A-Za-z0-9]', '', yt_info.get("title", "video"))
         ydl_opts = {
@@ -179,19 +182,14 @@ def _download_video_thread():
         if proxy:
             ydl_opts["proxy"] = proxy
 
-        ui["download_status_text"].grid()
-        ui["download_status_text"].config(text="Downloading...", foreground="orange")
-
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
         move_video_to_folder(title)
         ui["download_status_text"].config(text="Downloaded successfully", foreground="green")
+        ui["open_folder_button"].grid()
     except Exception as e:
         ui["download_status_text"].config(text=f"Download error: {e}", foreground="red", wraplength=200)
-
-    ui["open_folder_button"].grid()
-
 
 def move_video_to_folder(title):
     global downloaded_video_path
