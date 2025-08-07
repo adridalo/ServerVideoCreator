@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import threading
-from tkinter import W, Button, Label, Entry, Text, filedialog, ttk
+from tkinter import W, Button, Label, Entry, Text, Toplevel, filedialog, ttk
 import yt_dlp
 
 from svc.models.audio import Audio
@@ -48,7 +48,7 @@ def setup_download_tab(tab):
     ui["get_info_button"].grid(row=1, column=0, sticky=W, padx=10, pady=5)
 
     ui["fetched_video_info_text"] = Label(tab, text="", anchor="w", justify="left")
-    ui["fetched_video_info_text"].grid_forget()
+    ui["fetched_video_info_text"].grid_remove()
 
     ui["resolutions_combobox"] = ttk.Combobox(tab, values=["---"], width=50)
     ui["resolutions_combobox"].bind("<<ComboboxSelected>>", on_resolution_selected)
@@ -169,7 +169,8 @@ def _download_video_thread():
     try:
         ui["download_status_text"].grid()
         ui["download_status_text"].config(text="Downloading...", foreground="orange")
-        ui["open_folder_button"].grid_forget()
+        ui["open_folder_button"].grid_remove()
+
         yt_info = yt_fetch_video_info(video_url)
         title = re.sub(r'[^A-Za-z0-9]', '', yt_info.get("title", "video"))
         ydl_opts = {
@@ -185,13 +186,45 @@ def _download_video_thread():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
-        move_video_to_folder(title)
+        renamed_title = open_title_window(title)
+        move_video_to_folder(title, renamed_title=renamed_title)
+
         ui["download_status_text"].config(text="Downloaded successfully", foreground="green")
         ui["open_folder_button"].grid()
     except Exception as e:
         ui["download_status_text"].config(text=f"Download error: {e}", foreground="red", wraplength=200)
 
-def move_video_to_folder(title):
+def open_title_window(original_title):
+    final_title = {"result": original_title}
+
+    new_window = Toplevel(download_tab_ref)
+    new_window.title("Set Video Title")
+    new_window.geometry("600x200")
+
+    Label(new_window, text="Enter title for downloaded video (no extension):").grid(row=0, column=0)
+    new_title_entry = Entry(new_window, width=60)
+    new_title_entry.insert(0, original_title)
+    new_title_entry.grid(row=0, column=1)
+    new_title_entry.configure(highlightthickness=2, highlightcolor="blue")
+
+    def confirm_title():
+        new_title = new_title_entry.get().strip()
+        if new_title:
+            sanitized = re.sub(r'[^A-Za-z0-9]', '', new_title)
+            if sanitized:
+                final_title["result"] = sanitized
+            else:
+                final_title["result"] = original_title
+        new_window.destroy()
+
+    Button(new_window, text="Confirm", command=confirm_title).grid(row=1, sticky=W)
+
+    new_window.grab_set()
+    download_tab_ref.wait_window(new_window)
+    
+    return final_title['result']
+
+def move_video_to_folder(title, **kwargs):
     global downloaded_video_path
 
     downloaded_file = next((f"{title}.{ext}" for ext in supported_formats if os.path.exists(f"{title}.{ext}")), None)
@@ -207,6 +240,13 @@ def move_video_to_folder(title):
     res = DownloadedVideoInfo.get_pretty_resolution(info.resolution[0], info.fps, include_fps=False)
     target_folder = os.path.join("raw", res, str(info.fps))
     os.makedirs(target_folder, exist_ok=True)
+
+    renamed_title = kwargs.get("renamed_title")
+    if renamed_title and renamed_title != title:
+        _, ext = os.path.splitext(downloaded_file)
+        renamed_title += ext
+        os.rename(downloaded_file, renamed_title)
+        downloaded_file = renamed_title
     shutil.move(downloaded_file, os.path.join(target_folder, os.path.basename(downloaded_file)))
     downloaded_video_path = target_folder
 
