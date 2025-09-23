@@ -46,11 +46,12 @@ ui = def_ui()
 # Args:
 # - tab: Tkinter tab (used for frames for notebooks)
 def setup_convert_tab(tab):
-    global convert_tab_ref, cv_row_index, b_frames_value, ui
+    global convert_tab_ref, cv_row_index, b_frames_value, include_text_overlay_value, ui
 
     convert_tab_ref = tab
     cv_row_index = 0
     b_frames_value = IntVar()
+    include_text_overlay_value = IntVar(value=1)
     # Update UI to be blank
     ui.update(def_ui())
 
@@ -95,6 +96,10 @@ def setup_convert_tab(tab):
     # B Frames checkbox + label UI components
     ui["b_frames_checkbox_label"] = Label(tab, text="Enable B-Frames")
     ui["b_frames_checkbox"] = ttk.Checkbutton(tab, variable=b_frames_value)
+
+    # Include text overlay checkbox + label UI components
+    ui["include_text_overlay_label"] = Label(tab, text="Include text overlay")
+    ui["include_text_overlay_checkbox"] = ttk.Checkbutton(tab, variable=include_text_overlay_value)
 
     # Status of conversion text UI component
     ui["convert_status_text"] = Label(tab, text="", anchor="w", width=50)
@@ -230,7 +235,7 @@ def display_selected_files():
     # For each UI component to be shown now that there is a list of files to convert
     for key in ["clear_paths_button", "compression_dropbox_label", "compression_dropbox", "color_space_dropbox_label",
                 "color_space_dropbox", "bit_rate_scale_label", "bit_rate_scale", "audio_codec_label",
-                "audio_codec_dropbox", "b_frames_checkbox_label", "b_frames_checkbox"]:
+                "audio_codec_dropbox", "b_frames_checkbox_label", "b_frames_checkbox", "include_text_overlay_label", "include_text_overlay_checkbox"]:
         # Ff UI component is a label put it in the first column
         ui[key].grid(row=cv_row_index, column=0 if 'label' in key else 1, sticky=W, padx=10, pady=5)
         # If theres no label for that component, go to next row
@@ -268,8 +273,9 @@ def _convert_videos_thread():
         print("No files selected")
         return
 
-    # B Frames checkbox value
+    # B Frames + include text overlay checkbox value
     b_frames = b_frames_value.get()
+    include_text_overlay = include_text_overlay_value.get()
     # Bit rate value
     bit_rate = ui["bit_rate_scale"].get()
 
@@ -292,9 +298,13 @@ def _convert_videos_thread():
         output_path = input_path.with_name(out_name)
 
         # Video format options
-        vf = (f"format=yuv{selected_color_space}p,drawtext=fontfile=InfiniteBeyond.ttf:"
-              f"text='{res_str}     H{selected_compression}     {selected_color_space}     {bit_rate} bits':"
-              f"fontcolor=white:fontsize={overlay_size}:x=(w-text_w)/2:y=25")
+        vf = (
+            f"format=yuv{selected_color_space}p"
+            + (
+                f",drawtext=fontfile=InfiniteBeyond.ttf:text='{res_str}     H{selected_compression}     {selected_color_space}     {bit_rate} bits':fontcolor=white:fontsize={overlay_size}:x=(w-text_w)/2:y=25"
+                if include_text_overlay else ""
+            )
+        )
 
         # If B Frames were enabled
         if b_frames:
