@@ -2,6 +2,7 @@ from tkinter import Frame, Tk, ttk
 
 from svc.convert import setup_convert_tab
 from svc.download import setup_download_tab
+from svc.scale import setup_scale_tab
 
 # Main function that runs entire application
 def main():
@@ -30,6 +31,10 @@ def main():
     notebook.add(convert_tab, text="Convert")
     # Setup convert tab (initialize variables + UI components)
     setup_convert_tab(convert_tab)
+
+    scale_tab = Frame(notebook)
+    notebook.add(scale_tab, text="Scale")
+    setup_scale_tab(scale_tab)
 
     # Run Tkinter application
     root.mainloop()
