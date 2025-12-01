@@ -6,7 +6,7 @@ import threading
 from tkinter import W, Button, IntVar, Label, Scale, Text, filedialog, ttk
 
 from svc.models.video_info import DownloadedVideoInfo
-from svc.util import supported_formats
+from svc.util import SUPPORTED_FORMATS
 
 # UI and state references
 convert_tab_ref = None
@@ -169,7 +169,7 @@ def select_files():
     # If there are any videos
     if video_file_path:
         # If the video selected is in a supported format
-        if os.path.splitext(video_file_path[0])[1][1:] in supported_formats:
+        if os.path.splitext(video_file_path[0])[1][1:] in SUPPORTED_FORMATS:
             # Include selected video(s) to filepaths
             filepaths.extend(video_file_path)
             # Display selected files in the list
@@ -198,7 +198,7 @@ def select_directory():
                 # generate a path for file
                 generated_path = os.path.join(root, filename)
                 # if file is in a supported format
-                if os.path.splitext(filename)[1][1:] in supported_formats:
+                if os.path.splitext(filename)[1][1:] in SUPPORTED_FORMATS:
                     # add to list of files
                     files.append(generated_path)
         # Extend files into global filepaths

@@ -2,7 +2,7 @@ import os
 import yt_dlp
 
 # Application supported video formats
-supported_formats = ["mp4", "mkv", "webm", "flv", "avi"]
+SUPPORTED_FORMATS = ["mp4", "mkv", "webm", "flv", "avi"]
 
 # Funtion to get proxy settings based off included 'proxy.config.json'
 def get_proxy():

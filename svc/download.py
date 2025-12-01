@@ -8,7 +8,7 @@ import yt_dlp
 from svc.models.audio import Audio
 from svc.models.video import Video
 from svc.models.video_info import DownloadedVideoInfo
-from svc.util import open_folder, to_mb, yt_fetch_video_info, get_proxy, supported_formats
+from svc.util import open_folder, to_mb, yt_fetch_video_info, get_proxy, SUPPORTED_FORMATS
 
 # UI and state references
 download_tab_ref = None
@@ -317,7 +317,7 @@ def move_video_to_folder(title, **kwargs):
     global downloaded_video_path
 
     # Retrieves the first downloaded video from current working location using the title, query using the supported video formats
-    downloaded_file = next((f"{title}.{ext}" for ext in supported_formats if os.path.exists(f"{title}.{ext}")), None)
+    downloaded_file = next((f"{title}.{ext}" for ext in SUPPORTED_FORMATS if os.path.exists(f"{title}.{ext}")), None)
     # If there is no downloaded video found with the same title and extension
     if not downloaded_file:
         # Update UI mentioning no video found, escape

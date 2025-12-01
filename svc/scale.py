@@ -1,8 +1,12 @@
 import os
+import shutil
 from tkinter import W, Button, Label, filedialog, ttk
+
+import ffmpeg
 
 from svc.models.scales import REFRESH_RATES, SCALES
 from svc.models.video_info import DownloadedVideoInfo
+from svc.util import SUPPORTED_FORMATS
 
 video_file_path = None
 video_original_resolution = None
@@ -102,7 +106,36 @@ def on_scale_button_click():
     ui["scaling_status"].config(fg="#FFA500")
     ui["scaling_status"].grid(row=sc_row_index, column=0, sticky=W, padx=10, pady=5)
 
+    video_file_name = os.path.basename(video_file_path)
+
+    ffmpeg.input(video_file_path).output(os.path.join(".", video_file_name), vf=f"scale={selected_scale}:flags=lanczos", r=selected_refresh_rate).run()
+    move_video_to_folder(video_file_name)
+
+    ui["scaling_status"].config(fg="#00FF00", text="Scaling complete!")
+    ui["scaling_status"].grid(row=sc_row_index, column=0, sticky=W, padx=10, pady=5)
+
+def move_video_to_folder(title):
+    global video_file_path
+
+    scaled_video_file = next((f for f in os.listdir(os.path.join(".")) if f == title))
+
+    if not scaled_video_file:
+        ui["scaling_status"].config(text="File not found", fg="#FF0000")
+        return
     
+    info = DownloadedVideoInfo.get_video_info(scaled_video_file)
+    if not info:
+        ui["scaling_status"].config(text="Could not extract video info", fg="#FF0000", wraplength=100)
+        return
+    
+    res = DownloadedVideoInfo.get_pretty_resolution(info.resolution[0], info.fps, include_fps=False)
+
+    target_folder = os.path.join("scaled", res, str(info.fps))
+
+    os.makedirs(target_folder, exist_ok=True)
+
+    shutil.move(scaled_video_file, os.path.join(target_folder, os.path.basename(scaled_video_file)))
+    scaled_video_file = os.path.join(target_folder, os.path.basename(scaled_video_file))
 
 def reset_scale_ui(video_info_components=False, scale_components=False, refresh_rate_components=False, scaling_status_components=False):
     global video_file_path, video_original_resolution, sc_row_index, selected_scale, selected_refresh_rate
