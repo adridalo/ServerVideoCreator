@@ -1,6 +1,6 @@
 import re
 import threading
-from tkinter import Button, Label
+from tkinter import Button, Label, Toplevel
 
 import yt_dlp
 
@@ -167,32 +167,66 @@ def _download_video_thread():
     audio_format = RawAudioFormatInfo.get_format_from_string(selected_audio)
     video_url = DOWNLOAD_FRAME_UI["url_entry"].get()
 
-    DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
-    add_widget_to_grid(
-        DOWNLOAD_FRAME_UI["download_status_text"],
-        row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
-    )
+    try:
+        DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
+        add_widget_to_grid(
+            DOWNLOAD_FRAME_UI["download_status_text"],
+            row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+        )
 
-    inc_download_frame_row_index()
+        inc_download_frame_row_index()
 
-    cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
-    yt_dlp_options = {
-        "format": f"{resolution_format.id}+{audio_format.id}",
-        "outtmpl": f"{cleaned_title}.%(ext)s",
-        "restrictfilenames": True
-    }
+        cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
+        yt_dlp_options = {
+            "format": f"{resolution_format.id}+{audio_format.id}",
+            "outtmpl": f"{cleaned_title}.%(ext)s",
+            "restrictfilenames": True
+        }
 
-    # Get proxy information
-    proxy = get_proxy()
-    # If a proxy value is retrieved
-    if proxy:
-        # Add it to YDL options
-        yt_dlp_options["proxy"] = proxy
+        # Get proxy information
+        proxy = get_proxy()
+        # If a proxy value is retrieved
+        if proxy:
+            # Add it to YDL options
+            yt_dlp_options["proxy"] = proxy
 
-    with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
-        ydl.download(video_url)
+        with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
+            ydl.download(video_url)
 
-    edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
+        downloaded_video_title = open_title_window(cleaned_title)
+
+        edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
+    except Exception as e:
+        edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
+
+def open_title_window(original_title):
+    title_to_save = original_title
+
+    new_window = Toplevel(download_frame_ref)
+    new_window.title("Set new video title")
+    new_window.geometry("500x200")
+
+    add_widget_to_grid(create_label(new_window, text="Enter title for downloaded video"))
+    new_title_entry = create_entry(new_window, width=60)
+    new_title_entry.insert(0, original_title)
+    add_widget_to_grid(new_title_entry, column=1)
+
+    def confirm_title():
+        global title_to_save
+        new_title = new_title_entry.get().strip()
+        if new_title:
+            sanitized = re.sub(r'[^A-Za-z0-9]', '', new_title)
+            if sanitized:
+                title_to_save = sanitized
+            else:
+                title_to_save = original_title
+    
+        new_window.destroy()
+
+    add_widget_to_grid(create_button(new_window, text="Confirm", command=confirm_title), row=1)
+    new_window.grab_set()
+    download_frame_ref.wait_window(new_window)
+    return title_to_save
 
 def reset_ui():
     global selected_resolution, selected_audio, video_info
