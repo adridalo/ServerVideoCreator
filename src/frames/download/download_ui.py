@@ -8,7 +8,7 @@ DOWNLOAD_FRAME_UI = {
     "resolution_label": None, #in
     "audio_combobox": None, #in
     "audio_label": None, #in
-    "download_button": None,
-    "download_status_text": None,
+    "download_button": None, #in
+    "download_status_text": None, #in
     "open_folder_button": None
 }

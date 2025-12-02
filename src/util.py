@@ -16,6 +16,9 @@ def get_proxy():
         
     else:
         return ""
+    
+def to_mb(bytes):
+    return f"{bytes / 1_000_000:.2f}Mb" if bytes else "n/a"
 
 def create_label(frame, text, foreground=LabelColor.BLACK):
     return Label(frame, text=text, foreground=foreground)
@@ -31,8 +34,8 @@ def create_combobox(frame, width=40, command=lambda: None):
     combobox.bind("<<ComboboxSelected>>", command)
     return combobox
 
-def edit_label_text(label, new_text):
-    label.config(text=new_text)
+def edit_label_text(label, new_text, foreground=LabelColor.BLACK):
+    label.config(text=new_text, foreground=foreground)
 
 def update_combobox_values(combobox, new_values):
     combobox.config(values=new_values)

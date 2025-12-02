@@ -8,9 +8,6 @@ from src.util import get_proxy
 def inc_download_frame_row_index():
     DOWNLOAD_FRAME_UI["download_frame_row_index"] += 1
 
-def dec_download_frame_row_index():
-    DOWNLOAD_FRAME_UI["download_frame_row_index"] -= 1
-
 def yt_dlp_fetch_video_info(url):
     if url is None or len(url) == 0:
         return
@@ -72,6 +69,3 @@ def get_title_and_duration_from_video(video_info):
         video_info.get("title", "Unknown title"),
         video_info.get("duration_string") or video_info.get("duration") or "Unknown duration"
     )
-
-def to_mb(bytes):
-    return f"{bytes / 1_000_000:.2f}Mb" if bytes else "n/a"
