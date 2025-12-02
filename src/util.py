@@ -34,8 +34,8 @@ def create_combobox(frame, width=40, command=lambda: None):
     combobox.bind("<<ComboboxSelected>>", command)
     return combobox
 
-def edit_label_text(label, new_text, foreground=LabelColor.BLACK):
-    label.config(text=new_text, foreground=foreground)
+def edit_label_text(label, new_text, foreground=LabelColor.BLACK, wraplength=500):
+    label.config(text=new_text, foreground=foreground, wraplength=wraplength)
 
 def update_combobox_values(combobox, new_values):
     combobox.config(values=new_values)
