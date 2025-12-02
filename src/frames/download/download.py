@@ -1,4 +1,6 @@
+import os
 import re
+import shutil
 import threading
 from tkinter import Button, Label, Toplevel
 
@@ -7,6 +9,7 @@ import yt_dlp
 from src.frames.download.download_ui import DOWNLOAD_FRAME_UI
 from src.frames.download.util.download_util import get_audio_formats_from_video_info, get_title_and_duration_from_video, get_video_formats_from_video_info, inc_download_frame_row_index, yt_dlp_fetch_video_info
 from src.types.enums.color import LabelColor
+from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.types.models.raw_audio_format_info import RawAudioFormatInfo
 from src.types.models.raw_video_format_info import RawVideoFormatInfo
 from src.util import add_widget_to_grid, create_button, create_combobox, create_entry, create_label, edit_label_text, get_proxy, remove_widget_from_grid, update_combobox_values
@@ -15,6 +18,7 @@ download_frame_ref = None
 selected_resolution = None
 selected_audio = None
 video_info = None
+downloaded_video_path = None
 
 def set_download_frame_components(frame):
     global download_frame_ref
@@ -176,11 +180,21 @@ def _download_video_thread():
 
         inc_download_frame_row_index()
 
+        def output_path_hook(d):
+            global downloaded_video_path
+            if d["status"] == "finished":
+                info = d.get("info_dict", {})
+                downloaded_video_path = os.path.abspath(
+                    info.get("filepath") or info.get("_filename")
+                )
+
+
         cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
         yt_dlp_options = {
             "format": f"{resolution_format.id}+{audio_format.id}",
-            "outtmpl": f"{cleaned_title}.%(ext)s",
-            "restrictfilenames": True
+            "outtmpl": os.path.join(".",f"{cleaned_title}.%(ext)s"),
+            "restrictfilenames": True,
+            "progress_hooks": [output_path_hook]
         }
 
         # Get proxy information
@@ -192,8 +206,8 @@ def _download_video_thread():
 
         with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
             ydl.download(video_url)
-
         downloaded_video_title = open_title_window(cleaned_title)
+        move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
 
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
     except Exception as e:
@@ -212,7 +226,7 @@ def open_title_window(original_title):
     add_widget_to_grid(new_title_entry, column=1)
 
     def confirm_title():
-        global title_to_save
+        nonlocal title_to_save
         new_title = new_title_entry.get().strip()
         if new_title:
             sanitized = re.sub(r'[^A-Za-z0-9]', '', new_title)
@@ -228,6 +242,39 @@ def open_title_window(original_title):
     download_frame_ref.wait_window(new_window)
     return title_to_save
 
+def move_video_to_folder(title, **kwargs):
+    global downloaded_video_path 
+
+    downloaded_video_info = DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path)
+    if not downloaded_video_info:
+        edit_label_text(
+            DOWNLOAD_FRAME_UI["download_status_text"],
+            new_text="Could not extract video info",
+            foreground=LabelColor.RED,
+            wraplength=100
+        )
+        return
+    
+    downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()
+
+    target_folder = os.path.join("raw", downloaded_video_pretty_resolution, str(downloaded_video_info.fps))
+    os.makedirs(target_folder, exist_ok=True)
+
+    renamed_video_title = kwargs.get("renamed_title")
+    if renamed_video_title and renamed_video_title != title:
+        folder = os.path.dirname(downloaded_video_path)
+        _, ext = os.path.splitext(downloaded_video_path)
+
+        new_filename = renamed_video_title + ext
+        new_full_path = os.path.join(folder, new_filename)
+
+        os.rename(downloaded_video_path, new_full_path)
+        downloaded_video_path = new_full_path
+        
+    destination_file_path = os.path.join(target_folder, os.path.basename(downloaded_video_path))
+    shutil.move(downloaded_video_path, destination_file_path)
+    downloaded_video_path = os.path.abspath(destination_file_path)
+
 def reset_ui():
     global selected_resolution, selected_audio, video_info
 
@@ -235,5 +282,18 @@ def reset_ui():
     selected_audio = None
     video_info = None
 
-    for i in ["fetched_video_info_text", "resolutions_combobox", "resolution_label", "audio_combobox", "audio_label"]:
-        remove_widget_from_grid(DOWNLOAD_FRAME_UI[i])
+    download_ui_components = [
+        "fetched_video_info_text",
+        "resolutions_combobox",
+        "resolution_label",
+        "audio_combobox",
+        "audio_label",
+        "download_button",
+        "download_status_text"
+    ]
+
+    for key in download_ui_components:
+        widget = DOWNLOAD_FRAME_UI.get(key)
+        if widget is not None:
+            remove_widget_from_grid(widget)
+            DOWNLOAD_FRAME_UI[key] = None
