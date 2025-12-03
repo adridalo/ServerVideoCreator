@@ -1,5 +1,5 @@
 import os
-from tkinter import W, Button, Entry, Label, Text, ttk
+from tkinter import W, Button, Entry, Label, Scale, Text, ttk
 
 from src.types.enums.color import LabelColor
 
@@ -38,6 +38,12 @@ def create_combobox(frame, width=40, command=lambda: None):
     combobox.bind("<<ComboboxSelected>>", command)
     return combobox
 
+def create_scale(frame, from_=1, to=100, orient="horizontal"):
+    return Scale(frame, from_=from_, to=to, orient=orient)
+
+def create_checkbutton(frame, variable):
+    return ttk.Checkbutton(frame, variable=variable)
+
 def edit_label_text(label, new_text, foreground=LabelColor.BLACK, wraplength=500):
     label.config(text=new_text, foreground=foreground, wraplength=wraplength)
 
@@ -56,3 +62,7 @@ def remove_widget_from_grid(widget):
 
 def open_folder(path):
     os.startfile(path)
+
+SUPPORTED_COMPRESSION = [ "H264", "H265" ]
+SUPPORTED_COLOR_SPACE = [ "4:4:4", "4:2:2", "4:2:0" ]
+SUPPORTED_AUDIO_CODEC = [ "aac", "flac", "mp3", "alac", "opus", "sbc", "aptx" ]

@@ -3,5 +3,19 @@ CONVERT_FRAME_UI = {
     "select_file_button": None,
     "file_list_label": None,
     "file_list_text": None,
-    "clear_paths_button": None
+    "clear_paths_button": None,
+    "compression_dropbox": None,
+    "compression_dropbox_label": None,
+    "color_space_dropbox": None,
+    "color_space_dropbox_label": None,
+    "bit_rate_scale": None,
+    "bit_rate_scale_label": None,
+    "audio_codec_label": None,
+    "audio_codec_dropbox": None,
+    "b_frames_checkbox": None,
+    "b_frames_checkbox_label": None,
+    "convert_button": None,
+    "convert_status_text": None,
+    "include_text_overlay_label": None,
+    "include_text_overlay_checkbox": None
 }
