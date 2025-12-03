@@ -45,8 +45,8 @@ class DownloadedVideoInfo():
         rounded_fps = math.ceil(self.fps)
 
         if self.resolution[1] == 1080:
-            return f"HD{rounded_fps}"
+            return ("HD", rounded_fps)
         elif self.resolution[1] == 2160:
-            return f"4K{rounded_fps}"
+            return ("4K", rounded_fps)
         else:
-            return f"{self.resolution[1]}p{rounded_fps}"
+            return (f"{self.resolution[1]}p", rounded_fps)

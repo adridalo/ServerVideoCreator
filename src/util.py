@@ -1,3 +1,4 @@
+import os
 from tkinter import W, Button, Entry, Label, ttk
 
 from src.types.enums.color import LabelColor
@@ -46,3 +47,6 @@ def add_widget_to_grid(widget, row=0, column=0, padx=10, pady=5, columnspan=1):
 def remove_widget_from_grid(widget):
     if widget != None:
         widget.grid_remove()
+
+def open_folder(path):
+    os.startfile(path)

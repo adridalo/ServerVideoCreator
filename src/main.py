@@ -1,8 +1,8 @@
 from tkinter import Frame, Tk, ttk
 
-from src.frames.convert import set_convert_frame_components
+from src.frames.convert.convert import set_convert_frame_components
 from src.frames.download.download import set_download_frame_components
-from src.frames.scale import set_scale_frame_components
+from src.frames.scale.scale import set_scale_frame_components
 
 download_frame = None
 convert_frame = None

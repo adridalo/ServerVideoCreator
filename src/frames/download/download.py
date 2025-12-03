@@ -12,7 +12,7 @@ from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.types.models.raw_audio_format_info import RawAudioFormatInfo
 from src.types.models.raw_video_format_info import RawVideoFormatInfo
-from src.util import add_widget_to_grid, create_button, create_combobox, create_entry, create_label, edit_label_text, get_proxy, remove_widget_from_grid, update_combobox_values
+from src.util import add_widget_to_grid, create_button, create_combobox, create_entry, create_label, edit_label_text, get_proxy, open_folder, remove_widget_from_grid, update_combobox_values
 
 download_frame_ref = None
 selected_resolution = None
@@ -210,6 +210,14 @@ def _download_video_thread():
         move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
 
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
+
+        DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
+        add_widget_to_grid(
+            DOWNLOAD_FRAME_UI["open_folder_button"],
+            row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
+        )
+
+        inc_download_frame_row_index()
     except Exception as e:
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
 
@@ -255,7 +263,7 @@ def move_video_to_folder(title, **kwargs):
         )
         return
     
-    downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()
+    downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()[0]
 
     target_folder = os.path.join("raw", downloaded_video_pretty_resolution, str(downloaded_video_info.fps))
     os.makedirs(target_folder, exist_ok=True)
@@ -274,6 +282,9 @@ def move_video_to_folder(title, **kwargs):
     destination_file_path = os.path.join(target_folder, os.path.basename(downloaded_video_path))
     shutil.move(downloaded_video_path, destination_file_path)
     downloaded_video_path = os.path.abspath(destination_file_path)
+
+def on_open_file_in_folder_button_press():
+    open_folder(os.path.dirname(downloaded_video_path))
 
 def reset_ui():
     global selected_resolution, selected_audio, video_info
