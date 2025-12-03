@@ -33,7 +33,7 @@ def get_video_formats_from_video_info(video_info):
         if fmt.get("vcodec") == "none":
             continue
 
-        resolution = f"{fmt.get("width", "?")}x{fmt.get("height", "?")}"
+        resolution = f"{fmt.get("height", "?")}x{fmt.get("width", "?")}"
         fps = f"{int(fmt.get("fps", 0))}" if fmt.get("fps") else "n/a"
 
         video_formats.append(RawVideoFormatInfo(

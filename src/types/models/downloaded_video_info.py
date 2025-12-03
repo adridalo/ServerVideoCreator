@@ -41,12 +41,12 @@ class DownloadedVideoInfo():
         except Exception as e:
             print("Error: ", str(e))
 
-    def get_pretty_resolution(self):
+    def get_pretty_resolution(self, contain=False):
         rounded_fps = math.ceil(self.fps)
 
         if self.resolution[1] == 1080:
-            return ("HD", rounded_fps)
+            return ("HD", rounded_fps) if not contain else f"HD{rounded_fps}"
         elif self.resolution[1] == 2160:
-            return ("4K", rounded_fps)
+            return ("4K", rounded_fps) if not contain else f"4K{rounded_fps}"
         else:
-            return (f"{self.resolution[1]}p", rounded_fps)
+            return (f"{self.resolution[1]}p", rounded_fps) if not contain else f"{self.resolution[1]}p{rounded_fps}"
