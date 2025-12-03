@@ -76,9 +76,6 @@ def generate_video_resolutions_components():
 
     # Resolutions combobox
     DOWNLOAD_FRAME_UI["resolutions_combobox"] = create_combobox(download_frame_ref, command=on_video_resolution_selected)
-    DOWNLOAD_FRAME_UI["resolutions_combobox"].config(
-        
-    )
     update_combobox_values(
         DOWNLOAD_FRAME_UI["resolutions_combobox"], 
         [str(vf) for vf in video_formats]
@@ -120,6 +117,7 @@ def generate_audio_components():
     audio_formats = get_audio_formats_from_video_info(video_info)
 
     if DOWNLOAD_FRAME_UI["audio_combobox"] is None:
+        # Audio combobox
         DOWNLOAD_FRAME_UI["audio_combobox"] = create_combobox(download_frame_ref, command=on_audio_resolution_selected)
         update_combobox_values(
             DOWNLOAD_FRAME_UI["audio_combobox"], 
@@ -134,7 +132,7 @@ def generate_audio_components():
 
         inc_download_frame_row_index()
 
-        # Selected resolution information
+        # Selected audio information
         DOWNLOAD_FRAME_UI["audio_label"] = create_label(download_frame_ref, text="No audio selected")
         add_widget_to_grid(
             DOWNLOAD_FRAME_UI["audio_label"],
@@ -157,6 +155,7 @@ def on_audio_resolution_selected(e):
     selected_audio = current_selected_audio
 
     if DOWNLOAD_FRAME_UI["download_button"] is None:
+        # Download video button
         DOWNLOAD_FRAME_UI["download_button"] = create_button(download_frame_ref, text="Download", command=on_download_button_click)
         add_widget_to_grid(DOWNLOAD_FRAME_UI["download_button"], DOWNLOAD_FRAME_UI["download_frame_row_index"])
 
@@ -172,6 +171,7 @@ def _download_video_thread():
     video_url = DOWNLOAD_FRAME_UI["url_entry"].get()
 
     try:
+        # Download status
         DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
         add_widget_to_grid(
             DOWNLOAD_FRAME_UI["download_status_text"],
@@ -211,6 +211,7 @@ def _download_video_thread():
 
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
 
+        # Open file in containing folder button
         DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
         add_widget_to_grid(
             DOWNLOAD_FRAME_UI["open_folder_button"],
@@ -300,7 +301,7 @@ def reset_ui():
         "audio_combobox",
         "audio_label",
         "download_button",
-        "download_status_text"
+        "download_status_text",
     ]
 
     for key in download_ui_components:
