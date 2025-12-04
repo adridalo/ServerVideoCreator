@@ -243,15 +243,18 @@ def _convert_videos_thread():
         split_file_name = os.path.splitext(path)
         output_path = f"{"BF_" if b_frames_value else ""}{split_file_name[0]}_{res_combined}_{selected_compression}_{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}{bit_rate_value}bits{split_file_name[1]}"
         
+        # Video format options
         vf = (
             f"format=yuv{format_color_space_for_conversion(selected_color_space)}p"
             + (
-                f",drawtext=fontfile=InfiniteBeyond.ttf:text='{res_combined}     {selected_compression}     {selected_color_space}     {bit_rate_value} bits':fontcolor=white:fontsize={overlay_text_size}:x=(w-text_w)/2:y=25"
+                f",drawtext=fontfile=InfiniteBeyond.ttf:text='{res_combined}     {selected_compression}     {format_color_space_for_conversion(selected_color_space)}     {bit_rate_value} bits':fontcolor=white:fontsize={overlay_text_size}:x=(w-text_w)/2:y=25"
                 if include_text_overlay_value else ""
             )
         )
 
+        # If B Frames were enabled
         if b_frames_value:
+            # Add additional video format option which includes text overlay for B Frames to video
             vf += (f",drawtext=fontfile=InfiniteBeyond.ttf:text='B-Frames':fontcolor=red:"
                    f"fontsize={overlay_text_size}:x=(w-text_w)/2:y=h-text_h-25")
             
@@ -280,8 +283,9 @@ def _convert_videos_thread():
         ))
 
 def determine_overlay_text_size(resolution):
-    for h, size in [("4K", 200), ("HD", 100), (720, 75), (480, 50), (360, 30), (240, 15)]:
-        if resolution == h:
+    resolution_without_p = int(resolution.replace("p", ""))
+    for h, size in [("4K", 200), (1440, 150), ("HD", 100), (720, 75), (480, 50), (360, 30), (240, 15)]:
+        if resolution_without_p == h:
             return size
     return 10
 

@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['svc\\main.py'],
+    ['src\\main.py'],
     pathex=[],
     binaries=[],
     datas=[],
