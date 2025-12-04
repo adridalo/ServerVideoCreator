@@ -16,6 +16,7 @@ convert_frame_ref = None
 videos_paths = []
 b_frames_variable = None
 include_text_overlay_variable = None
+last_opened_navigation_path = os.path.join(".")
 
 def set_convert_frame_components(frame):
     global convert_frame_ref, b_frames_variable, include_text_overlay_variable
@@ -39,17 +40,19 @@ def set_convert_frame_components(frame):
 
 
 def on_file_select_button_click():
-    global videos_paths
+    global videos_paths, last_opened_navigation_path
 
     selected = filedialog.askopenfilenames(
         title="Select videos",
+        initialdir=last_opened_navigation_path,
         filetypes=[("Videos", "*.mp4 *.mkv")]
     )
 
     if not selected:
         return
 
-    videos_paths = list(selected)
+    last_opened_navigation_path = os.path.dirname(selected[0])
+    videos_paths.extend(selected)
 
     display_selected_files()
     display_conversion_options()
