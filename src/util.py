@@ -69,3 +69,4 @@ def open_folder(path):
 SUPPORTED_COMPRESSION = [ "H264", "H265" ]
 SUPPORTED_COLOR_SPACE = [ "4:4:4", "4:2:2", "4:2:0" ]
 SUPPORTED_AUDIO_CODEC = [ "aac", "flac", "mp3", "alac", "opus", "sbc", "aptx" ]
+SUPPORTED_VIDEO_FORMAT = [ "mp4" ]
