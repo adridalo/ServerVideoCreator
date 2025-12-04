@@ -316,11 +316,6 @@ def _convert_videos_thread():
             )
 
             ffmpeg.run(stream)
-            convert_frame_ref.after(0, lambda: edit_label_text(
-                CONVERT_FRAME_UI["convert_status_text"],
-                new_text="Conversion completed successfully!",
-                foreground=LabelColor.GREEN
-            ))
 
             target_dir = os.path.join(
                 "converted", 
@@ -332,13 +327,18 @@ def _convert_videos_thread():
             )
             os.makedirs(target_dir, exist_ok=True)
             shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
-
         except Exception as e:
             edit_label_text(
                 CONVERT_FRAME_UI["convert_status_text"],
                 new_text=f"Error occurred during conversion: {e}",
                 foreground=LabelColor.RED
             )
+
+    convert_frame_ref.after(0, lambda: edit_label_text(
+        CONVERT_FRAME_UI["convert_status_text"],
+        new_text=f"Conversion of {len(videos_paths)} video(s) completed!",
+        foreground=LabelColor.GREEN
+    ))
 
 def determine_overlay_text_size(resolution):
     try:
