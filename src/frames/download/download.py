@@ -172,13 +172,22 @@ def _download_video_thread():
 
     try:
         # Download status
-        DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
-        add_widget_to_grid(
-            DOWNLOAD_FRAME_UI["download_status_text"],
-            row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
-        )
+        if DOWNLOAD_FRAME_UI["download_status_text"] is None:
+            DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
+            add_widget_to_grid(
+                DOWNLOAD_FRAME_UI["download_status_text"],
+                row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+            )
 
-        inc_download_frame_row_index()
+            inc_download_frame_row_index()
+        
+        elif DOWNLOAD_FRAME_UI["download_status_text"] is not None:
+            edit_label_text(
+                DOWNLOAD_FRAME_UI["download_status_text"],
+                new_text="Downloading...",
+                foreground=LabelColor.ORANGE
+            )
+            remove_widget_from_grid(DOWNLOAD_FRAME_UI["open_folder_button"])
 
         def output_path_hook(d):
             global downloaded_video_path
@@ -211,15 +220,14 @@ def _download_video_thread():
 
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
 
-        # Open file in containing folder button
-        if DOWNLOAD_FRAME_UI["open_folder_button"] is None:
-            DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
-            add_widget_to_grid(
-                DOWNLOAD_FRAME_UI["open_folder_button"],
-                row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
-            )
+        # Open folder button
+        DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
+        add_widget_to_grid(
+            DOWNLOAD_FRAME_UI["open_folder_button"],
+            row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
+        )
 
-            inc_download_frame_row_index()
+        inc_download_frame_row_index()
     except Exception as e:
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
 
