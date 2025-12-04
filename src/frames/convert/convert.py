@@ -241,7 +241,7 @@ def _convert_videos_thread():
             overlay_text_size = determine_overlay_text_size(res[0])
 
         split_file_name = os.path.splitext(path)
-        output_path = f"{"BF_" if b_frames_value else ""}{split_file_name[0]}_{res_combined}_{selected_compression}_{bit_rate_value}bits{split_file_name[1]}"
+        output_path = f"{"BF_" if b_frames_value else ""}{split_file_name[0]}_{res_combined}_{selected_compression}_{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}{bit_rate_value}bits{split_file_name[1]}"
         
         vf = (
             f"format=yuv{format_color_space_for_conversion(selected_color_space)}p"
