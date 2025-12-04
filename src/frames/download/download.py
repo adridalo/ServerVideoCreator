@@ -212,13 +212,14 @@ def _download_video_thread():
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
 
         # Open file in containing folder button
-        DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
-        add_widget_to_grid(
-            DOWNLOAD_FRAME_UI["open_folder_button"],
-            row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
-        )
+        if DOWNLOAD_FRAME_UI["open_folder_button"] is None:
+            DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
+            add_widget_to_grid(
+                DOWNLOAD_FRAME_UI["open_folder_button"],
+                row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
+            )
 
-        inc_download_frame_row_index()
+            inc_download_frame_row_index()
     except Exception as e:
         edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
 
@@ -294,7 +295,7 @@ def reset_ui():
     selected_audio = None
     video_info = None
 
-    download_ui_components = [
+    components_to_reset = [
         "fetched_video_info_text",
         "resolutions_combobox",
         "resolution_label",
@@ -302,9 +303,10 @@ def reset_ui():
         "audio_label",
         "download_button",
         "download_status_text",
+        "open_folder_button",
     ]
 
-    for key in download_ui_components:
+    for key in components_to_reset:
         widget = DOWNLOAD_FRAME_UI.get(key)
         if widget is not None:
             remove_widget_from_grid(widget)
