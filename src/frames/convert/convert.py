@@ -241,7 +241,7 @@ def _convert_videos_thread():
             overlay_text_size = determine_overlay_text_size(res[0])
 
         split_file_name = os.path.splitext(path)
-        output_path = f"{"BF_" if b_frames_value else ""}{split_file_name[0]}_{res_combined}_{selected_compression}_{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}{bit_rate_value}bits{split_file_name[1]}"
+        output_path = f"{"BF_" if b_frames_value else ""}{os.path.basename(path)}_{res_combined}_{selected_compression}_{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}{bit_rate_value}bits{split_file_name[1]}"
         
         # Video format options
         vf = (
@@ -258,21 +258,25 @@ def _convert_videos_thread():
             vf += (f",drawtext=fontfile=InfiniteBeyond.ttf:text='B-Frames':fontcolor=red:"
                    f"fontsize={overlay_text_size}:x=(w-text_w)/2:y=h-text_h-25")
             
-        stream = ffmpeg.input(path)
-        gop = calculate_goc(res[1])
+        stream_input = ffmpeg.input(path)
+
+        output_options = {
+            'b:v': f'{bit_rate_value}M',
+            'acodec': selected_audio_codec,
+            'vcodec': f'libx{format_compression_for_conversion(selected_compression)}',
+            'g': str(calculate_gop(res[1])),
+            'ac': '2',
+            'vf': vf,
+            'bf': 0
+        }
+
+        if b_frames_value:
+            del output_options['bf']
 
         stream = ffmpeg.output(
-            stream,
+            stream_input,
             output_path,
-            **{
-                'b:v': f'{bit_rate_value}M',
-                'acodec': selected_audio_codec,
-                'vcodec': f'libx{format_compression_for_conversion(selected_compression)}',
-                'g': str(gop),
-                'ac': '2',
-                'vf': vf,
-                **({'bf': '0'} if not b_frames_value else {})
-            }
+            **output_options
         )
 
         ffmpeg.run(stream)
@@ -289,7 +293,7 @@ def determine_overlay_text_size(resolution):
             return size
     return 10
 
-def calculate_goc(fps):
+def calculate_gop(fps):
     return int(fps * 1.5)
 
 def format_color_space_for_conversion(color_space):
