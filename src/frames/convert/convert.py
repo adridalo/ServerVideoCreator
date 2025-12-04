@@ -10,7 +10,7 @@ from src.frames.convert.convert_ui import CONVERT_FRAME_UI
 from src.frames.convert.util.convert_util import inc_convert_frame_row_index
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
-from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, update_combobox_values
+from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, SUPPORTED_VIDEO_FORMAT, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, update_combobox_values
 
 convert_frame_ref = None
 videos_paths = []
@@ -36,6 +36,14 @@ def set_convert_frame_components(frame):
     add_widget_to_grid(CONVERT_FRAME_UI["select_file_button"],
                        row=CONVERT_FRAME_UI["convert_frame_row_index"])
     
+    CONVERT_FRAME_UI["select_directory_button"] = create_button(
+        frame,
+        text="Select directory to convert",
+        command=on_directory_select_button_click
+    )
+    add_widget_to_grid(CONVERT_FRAME_UI["select_directory_button"],
+                       row=CONVERT_FRAME_UI["convert_frame_row_index"], column=1, padx=10, pady=5)
+    
     inc_convert_frame_row_index()
 
 
@@ -57,6 +65,29 @@ def on_file_select_button_click():
     display_selected_files()
     display_conversion_options()
 
+def on_directory_select_button_click():
+    global videos_paths, last_opened_navigation_path
+
+    selected = list(filedialog.askdirectory(
+        title="Select directory",
+        initialdir=last_opened_navigation_path
+    ))
+
+    selected = "".join(selected)
+    last_opened_navigation_path = selected
+
+    if selected:
+        files = []
+        for root, _, filenames in os.walk(selected):
+            for filename in filenames:
+                generated_path = os.path.join(root, filename)
+                if os.path.splitext(filename)[1][1:] in SUPPORTED_VIDEO_FORMAT:
+                    files.append(generated_path)
+
+        videos_paths.extend(files)
+
+        display_selected_files()
+        display_conversion_options()
 
 def display_selected_files():
     # First creation

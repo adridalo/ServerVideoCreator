@@ -1,6 +1,7 @@
 CONVERT_FRAME_UI = {
     "convert_frame_row_index": 0, #in
     "select_file_button": None, #in
+    "select_directory_button": None, #in
     "file_list_label": None, #in
     "file_list_text": None, #in
     "clear_paths_button": None, #in
