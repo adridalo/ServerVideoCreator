@@ -47,6 +47,9 @@ def create_checkbutton(frame, variable):
 def edit_label_text(label, new_text, foreground=LabelColor.BLACK, wraplength=500):
     label.config(text=new_text, foreground=foreground, wraplength=wraplength)
 
+def change_text_widget_state(widget, state):
+    widget.config(state=state)
+
 def update_combobox_values(combobox, new_values):
     combobox.config(values=new_values)
 

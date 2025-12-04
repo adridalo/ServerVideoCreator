@@ -25,6 +25,17 @@ class DownloadedVideoInfo():
             height = video_stream["height"]
             width = video_stream["width"]
 
+            rotation = None
+            side_data = video_stream.get("side_data_list")
+            if side_data and isinstance(side_data, list):
+                rotation = side_data[0].get("rotation")
+
+            if rotation in (90, 270):
+                width, height = height, width
+
+            if width < height:
+                width, height = height, width
+
             rate = video_stream.get("avg_frame_rate", "0/0")
             num, denom = map(int, rate.split("/"))
             frame_rate = round(num / denom) if denom != 0 else 0
@@ -32,7 +43,7 @@ class DownloadedVideoInfo():
             return DownloadedVideoInfo(
                 os.path.basename(video_file),
                 video_file,
-                (height, width),
+                (width, height),
                 frame_rate
             )
     
@@ -41,12 +52,15 @@ class DownloadedVideoInfo():
         except Exception as e:
             print("Error: ", str(e))
 
-    def get_pretty_resolution(self, contain=False):
+    # contain=False: seperates resolution and fps into tuple
+    # contain=True: combines resolution and fps into one str
+    def get_pretty_resolution(self, combine=False):
         rounded_fps = math.ceil(self.fps)
+        height = self.resolution[1]
 
-        if self.resolution[1] == 1080:
-            return ("HD", rounded_fps) if not contain else f"HD{rounded_fps}"
-        elif self.resolution[1] == 2160:
-            return ("4K", rounded_fps) if not contain else f"4K{rounded_fps}"
+        if height == 1080:
+            return ("HD", rounded_fps) if not combine else f"HD{rounded_fps}"
+        elif height == 2160:
+            return ("4K", rounded_fps) if not combine else f"4K{rounded_fps}"
         else:
-            return (f"{self.resolution[1]}p", rounded_fps) if not contain else f"{self.resolution[1]}p{rounded_fps}"
+            return (f"{height}p", rounded_fps) if not combine else f"{height}p{rounded_fps}"
