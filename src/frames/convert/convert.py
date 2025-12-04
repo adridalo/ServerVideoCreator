@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import shutil
 import threading
 from tkinter import IntVar, filedialog
 
@@ -258,38 +259,61 @@ def _convert_videos_thread():
             vf += (f",drawtext=fontfile=InfiniteBeyond.ttf:text='B-Frames':fontcolor=red:"
                    f"fontsize={overlay_text_size}:x=(w-text_w)/2:y=h-text_h-25")
             
-        stream_input = ffmpeg.input(path)
+        try:
+            stream_input = ffmpeg.input(path)
 
-        output_options = {
-            'b:v': f'{bit_rate_value}M',
-            'acodec': selected_audio_codec,
-            'vcodec': f'libx{format_compression_for_conversion(selected_compression)}',
-            'g': str(calculate_gop(res[1])),
-            'ac': '2',
-            'vf': vf,
-            'bf': 0
-        }
+            output_options = {
+                'b:v': f'{bit_rate_value}M',
+                'acodec': selected_audio_codec,
+                'vcodec': f'libx{format_compression_for_conversion(selected_compression)}',
+                'g': str(calculate_gop(res[1])),
+                'ac': '2',
+                'vf': vf,
+                'bf': 0
+            }
 
-        if b_frames_value:
-            del output_options['bf']
+            if b_frames_value:
+                del output_options['bf']
 
-        stream = ffmpeg.output(
-            stream_input,
-            output_path,
-            **output_options
-        )
+            stream = ffmpeg.output(
+                stream_input,
+                output_path,
+                **output_options
+            )
 
-        ffmpeg.run(stream)
-        convert_frame_ref.after(0, lambda: edit_label_text(
-            CONVERT_FRAME_UI["convert_status_text"],
-            new_text="Conversion completed successfully!",
-            foreground=LabelColor.GREEN
-        ))
+            ffmpeg.run(stream)
+            convert_frame_ref.after(0, lambda: edit_label_text(
+                CONVERT_FRAME_UI["convert_status_text"],
+                new_text="Conversion completed successfully!",
+                foreground=LabelColor.GREEN
+            ))
+
+            target_dir = os.path.join(
+                "converted", 
+                selected_compression, 
+                res[0], 
+                str(res[1]), 
+                format_color_space_for_conversion(selected_color_space) if selected_color_space != "4:2:0" else "",
+                "B-Frames" if b_frames_value else ""
+            )
+            os.makedirs(target_dir, exist_ok=True)
+            shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
+
+        except Exception as e:
+            edit_label_text(
+                CONVERT_FRAME_UI["convert_status_text"],
+                new_text=f"Error occurred during conversion: {e}",
+                foreground=LabelColor.RED
+            )
 
 def determine_overlay_text_size(resolution):
-    resolution_without_p = int(resolution.replace("p", ""))
+    try:
+        parsed_resolution = int(resolution.replace("p", ""))
+    except Exception:
+        parsed_resolution = resolution
+
     for h, size in [("4K", 200), (1440, 150), ("HD", 100), (720, 75), (480, 50), (360, 30), (240, 15)]:
-        if resolution_without_p == h:
+        if parsed_resolution == h:
             return size
     return 10
 
