@@ -1,14 +1,14 @@
 DOWNLOAD_UI = {
     "download_frame_row_index": 0,
-    "enter_yt_url_text": None, #in
-    "url_entry": None, #in
-    "get_info_button": None, #in
-    "fetched_video_info_text": None, #in
-    "resolutions_combobox": None, #in
-    "resolution_label": None, #in
-    "audio_combobox": None, #in
-    "audio_label": None, #in
-    "download_button": None, #in
-    "download_status_text": None, #in
+    "enter_yt_url_text": None, 
+    "url_entry": None, 
+    "get_info_button": None, 
+    "fetched_video_info_text": None, 
+    "resolutions_combobox": None, 
+    "resolution_label": None, 
+    "audio_combobox": None, 
+    "audio_label": None, 
+    "download_button": None, 
+    "download_status_text": None, 
     "open_folder_button": None
 }

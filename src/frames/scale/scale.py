@@ -182,7 +182,6 @@ def _video_scaling_thread():
     )
 
 def move_video_to_folder(video):
-    print(1)
     scaled_video_file = next((f for f in os.listdir(os.path.join(".")) if f == video))
 
     if not scaled_video_file:
