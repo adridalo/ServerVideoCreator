@@ -6,7 +6,7 @@ from tkinter import Button, Label, Toplevel
 
 import yt_dlp
 
-from src.frames.download.download_ui import DOWNLOAD_FRAME_UI
+from src.frames.download.download_ui import DOWNLOAD_UI
 from src.frames.download.util.download_util import get_audio_formats_from_video_info, get_title_and_duration_from_video, get_video_formats_from_video_info, inc_download_frame_row_index, yt_dlp_fetch_video_info
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
@@ -26,24 +26,24 @@ def set_download_frame_components(frame):
     download_frame_ref = frame
 
     # Enter YouTube URL Label
-    DOWNLOAD_FRAME_UI["enter_yt_url_text"] = create_label(frame, "Enter YouTube URL: ")
-    add_widget_to_grid(DOWNLOAD_FRAME_UI["enter_yt_url_text"])
+    DOWNLOAD_UI["enter_yt_url_text"] = create_label(frame, "Enter YouTube URL: ")
+    add_widget_to_grid(DOWNLOAD_UI["enter_yt_url_text"])
 
     # YouTube URL Entry (input box)
-    DOWNLOAD_FRAME_UI["url_entry"] = create_entry(frame)
-    add_widget_to_grid(DOWNLOAD_FRAME_UI["url_entry"], column=1)
+    DOWNLOAD_UI["url_entry"] = create_entry(frame)
+    add_widget_to_grid(DOWNLOAD_UI["url_entry"], column=1)
 
     inc_download_frame_row_index()
 
     # Get Info button
-    DOWNLOAD_FRAME_UI["get_info_button"] = create_button(
+    DOWNLOAD_UI["get_info_button"] = create_button(
         frame,
         text="Get Info", 
         command=generate_video_resolutions_components
     )
     add_widget_to_grid(
-        DOWNLOAD_FRAME_UI["get_info_button"], 
-        row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
+        DOWNLOAD_UI["get_info_button"], 
+        row=DOWNLOAD_UI["download_frame_row_index"]
     )
 
     inc_download_frame_row_index()
@@ -53,21 +53,21 @@ def generate_video_resolutions_components():
 
     reset_ui()
 
-    if not DOWNLOAD_FRAME_UI["url_entry"].get():
+    if not DOWNLOAD_UI["url_entry"].get():
         return
     
-    video_url = DOWNLOAD_FRAME_UI["url_entry"].get()
+    video_url = DOWNLOAD_UI["url_entry"].get()
     video_info = yt_dlp_fetch_video_info(video_url)
     video_formats = get_video_formats_from_video_info(video_info)
 
     (video_title, video_duration) = get_title_and_duration_from_video(video_info)
 
     # Fetched video information text
-    DOWNLOAD_FRAME_UI["fetched_video_info_text"] = create_label(download_frame_ref, text=f"Title: {video_title}\nDuration: {video_duration}")
-    DOWNLOAD_FRAME_UI["fetched_video_info_text"].config(justify="left")
+    DOWNLOAD_UI["fetched_video_info_text"] = create_label(download_frame_ref, text=f"Title: {video_title}\nDuration: {video_duration}")
+    DOWNLOAD_UI["fetched_video_info_text"].config(justify="left")
     add_widget_to_grid(
-        DOWNLOAD_FRAME_UI["fetched_video_info_text"],
-        row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+        DOWNLOAD_UI["fetched_video_info_text"],
+        row=DOWNLOAD_UI["download_frame_row_index"],
         column=0,
         columnspan=2
     )
@@ -75,25 +75,25 @@ def generate_video_resolutions_components():
     inc_download_frame_row_index()
 
     # Resolutions combobox
-    DOWNLOAD_FRAME_UI["resolutions_combobox"] = create_combobox(download_frame_ref, command=on_video_resolution_selected)
+    DOWNLOAD_UI["resolutions_combobox"] = create_combobox(download_frame_ref, command=on_video_resolution_selected)
     update_combobox_values(
-        DOWNLOAD_FRAME_UI["resolutions_combobox"], 
+        DOWNLOAD_UI["resolutions_combobox"], 
         [str(vf) for vf in video_formats]
     )
-    DOWNLOAD_FRAME_UI["resolutions_combobox"].set("---")
+    DOWNLOAD_UI["resolutions_combobox"].set("---")
     add_widget_to_grid(
-        DOWNLOAD_FRAME_UI["resolutions_combobox"], 
-        row=DOWNLOAD_FRAME_UI["download_frame_row_index"], 
+        DOWNLOAD_UI["resolutions_combobox"], 
+        row=DOWNLOAD_UI["download_frame_row_index"], 
         column=1
     )
 
     inc_download_frame_row_index()
 
     # Selected resolution information
-    DOWNLOAD_FRAME_UI["resolution_label"] = create_label(download_frame_ref, text="No resolution selected")
+    DOWNLOAD_UI["resolution_label"] = create_label(download_frame_ref, text="No resolution selected")
     add_widget_to_grid(
-        DOWNLOAD_FRAME_UI["resolution_label"],
-        row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+        DOWNLOAD_UI["resolution_label"],
+        row=DOWNLOAD_UI["download_frame_row_index"],
         column=0,
         columnspan=2
     )
@@ -103,11 +103,11 @@ def generate_video_resolutions_components():
 def on_video_resolution_selected(e):
     global selected_resolution
 
-    current_selected_resolution = DOWNLOAD_FRAME_UI["resolutions_combobox"].get()
+    current_selected_resolution = DOWNLOAD_UI["resolutions_combobox"].get()
     if current_selected_resolution == "---":
         return
     
-    edit_label_text(DOWNLOAD_FRAME_UI["resolution_label"], f"Selected resolution: {current_selected_resolution}")
+    edit_label_text(DOWNLOAD_UI["resolution_label"], f"Selected resolution: {current_selected_resolution}")
 
     selected_resolution = current_selected_resolution
 
@@ -116,27 +116,27 @@ def on_video_resolution_selected(e):
 def generate_audio_components():
     audio_formats = get_audio_formats_from_video_info(video_info)
 
-    if DOWNLOAD_FRAME_UI["audio_combobox"] is None:
+    if DOWNLOAD_UI["audio_combobox"] is None:
         # Audio combobox
-        DOWNLOAD_FRAME_UI["audio_combobox"] = create_combobox(download_frame_ref, command=on_audio_resolution_selected)
+        DOWNLOAD_UI["audio_combobox"] = create_combobox(download_frame_ref, command=on_audio_resolution_selected)
         update_combobox_values(
-            DOWNLOAD_FRAME_UI["audio_combobox"], 
+            DOWNLOAD_UI["audio_combobox"], 
             [str(af) for af in audio_formats]
         )
-        DOWNLOAD_FRAME_UI["audio_combobox"].set("---")
+        DOWNLOAD_UI["audio_combobox"].set("---")
         add_widget_to_grid(
-            DOWNLOAD_FRAME_UI["audio_combobox"], 
-            row=DOWNLOAD_FRAME_UI["download_frame_row_index"], 
+            DOWNLOAD_UI["audio_combobox"], 
+            row=DOWNLOAD_UI["download_frame_row_index"], 
             column=1
         )
 
         inc_download_frame_row_index()
 
         # Selected audio information
-        DOWNLOAD_FRAME_UI["audio_label"] = create_label(download_frame_ref, text="No audio selected")
+        DOWNLOAD_UI["audio_label"] = create_label(download_frame_ref, text="No audio selected")
         add_widget_to_grid(
-            DOWNLOAD_FRAME_UI["audio_label"],
-            row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+            DOWNLOAD_UI["audio_label"],
+            row=DOWNLOAD_UI["download_frame_row_index"],
             column=0,
             columnspan=2
         )
@@ -146,18 +146,18 @@ def generate_audio_components():
 def on_audio_resolution_selected(e):
     global selected_audio
 
-    current_selected_audio = DOWNLOAD_FRAME_UI["audio_combobox"].get()
+    current_selected_audio = DOWNLOAD_UI["audio_combobox"].get()
     if current_selected_audio == "---":
         return
     
-    edit_label_text(DOWNLOAD_FRAME_UI["audio_label"], f"Selected audio: {current_selected_audio}")
+    edit_label_text(DOWNLOAD_UI["audio_label"], f"Selected audio: {current_selected_audio}")
 
     selected_audio = current_selected_audio
 
-    if DOWNLOAD_FRAME_UI["download_button"] is None:
+    if DOWNLOAD_UI["download_button"] is None:
         # Download video button
-        DOWNLOAD_FRAME_UI["download_button"] = create_button(download_frame_ref, text="Download", command=on_download_button_click)
-        add_widget_to_grid(DOWNLOAD_FRAME_UI["download_button"], DOWNLOAD_FRAME_UI["download_frame_row_index"])
+        DOWNLOAD_UI["download_button"] = create_button(download_frame_ref, text="Download", command=on_download_button_click)
+        add_widget_to_grid(DOWNLOAD_UI["download_button"], DOWNLOAD_UI["download_frame_row_index"])
 
         inc_download_frame_row_index()
 
@@ -168,26 +168,26 @@ def on_download_button_click():
 def _download_video_thread():
     resolution_format = RawVideoFormatInfo.get_format_from_string(selected_resolution)
     audio_format = RawAudioFormatInfo.get_format_from_string(selected_audio)
-    video_url = DOWNLOAD_FRAME_UI["url_entry"].get()
+    video_url = DOWNLOAD_UI["url_entry"].get()
 
     try:
         # Download status
-        if DOWNLOAD_FRAME_UI["download_status_text"] is None:
-            DOWNLOAD_FRAME_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
+        if DOWNLOAD_UI["download_status_text"] is None:
+            DOWNLOAD_UI["download_status_text"] = create_label(download_frame_ref, text="Downloading...", foreground=LabelColor.ORANGE)
             add_widget_to_grid(
-                DOWNLOAD_FRAME_UI["download_status_text"],
-                row=DOWNLOAD_FRAME_UI["download_frame_row_index"],
+                DOWNLOAD_UI["download_status_text"],
+                row=DOWNLOAD_UI["download_frame_row_index"],
             )
 
             inc_download_frame_row_index()
         
-        elif DOWNLOAD_FRAME_UI["download_status_text"] is not None:
+        elif DOWNLOAD_UI["download_status_text"] is not None:
             edit_label_text(
-                DOWNLOAD_FRAME_UI["download_status_text"],
+                DOWNLOAD_UI["download_status_text"],
                 new_text="Downloading...",
                 foreground=LabelColor.ORANGE
             )
-            remove_widget_from_grid(DOWNLOAD_FRAME_UI["open_folder_button"])
+            remove_widget_from_grid(DOWNLOAD_UI["open_folder_button"])
 
         def output_path_hook(d):
             global downloaded_video_path
@@ -218,18 +218,18 @@ def _download_video_thread():
         downloaded_video_title = open_title_window(cleaned_title)
         move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
 
-        edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
+        edit_label_text(DOWNLOAD_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
 
         # Open folder button
-        DOWNLOAD_FRAME_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
+        DOWNLOAD_UI["open_folder_button"] = create_button(download_frame_ref, text="Open video in containing folder", command=on_open_file_in_folder_button_press)
         add_widget_to_grid(
-            DOWNLOAD_FRAME_UI["open_folder_button"],
-            row=DOWNLOAD_FRAME_UI["download_frame_row_index"]
+            DOWNLOAD_UI["open_folder_button"],
+            row=DOWNLOAD_UI["download_frame_row_index"]
         )
 
         inc_download_frame_row_index()
     except Exception as e:
-        edit_label_text(DOWNLOAD_FRAME_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
+        edit_label_text(DOWNLOAD_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
 
 def open_title_window(original_title):
     title_to_save = original_title
@@ -266,7 +266,7 @@ def move_video_to_folder(title, **kwargs):
     downloaded_video_info = DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path)
     if not downloaded_video_info:
         edit_label_text(
-            DOWNLOAD_FRAME_UI["download_status_text"],
+            DOWNLOAD_UI["download_status_text"],
             new_text="Could not extract video info",
             foreground=LabelColor.RED,
             wraplength=100
@@ -315,7 +315,7 @@ def reset_ui():
     ]
 
     for key in components_to_reset:
-        widget = DOWNLOAD_FRAME_UI.get(key)
+        widget = DOWNLOAD_UI.get(key)
         if widget is not None:
             remove_widget_from_grid(widget)
-            DOWNLOAD_FRAME_UI[key] = None
+            DOWNLOAD_UI[key] = None

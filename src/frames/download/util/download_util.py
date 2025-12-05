@@ -1,12 +1,12 @@
 import yt_dlp
-from src.frames.download.download_ui import DOWNLOAD_FRAME_UI
+from src.frames.download.download_ui import DOWNLOAD_UI
 from src.types.models.raw_audio_format_info import RawAudioFormatInfo
 from src.types.models.raw_video_format_info import RawVideoFormatInfo
 from src.util import get_proxy
 
 
 def inc_download_frame_row_index():
-    DOWNLOAD_FRAME_UI["download_frame_row_index"] += 1
+    DOWNLOAD_UI["download_frame_row_index"] += 1
 
 def yt_dlp_fetch_video_info(url):
     if url is None or len(url) == 0:

@@ -6,8 +6,8 @@ from tkinter import IntVar, filedialog
 
 import ffmpeg
 
-from src.frames.convert.convert_ui import CONVERT_FRAME_UI
-from src.frames.convert.util.convert_util import inc_convert_frame_row_index
+from src.frames.convert.convert_ui import CONVERT_UI
+from src.frames.convert.util.convert_util import calculate_gop, determine_overlay_text_size, format_color_space_for_conversion, format_compression_for_conversion, inc_convert_frame_row_index, on_clear_path_button_click
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, SUPPORTED_VIDEO_FORMAT, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, update_combobox_values
@@ -22,27 +22,27 @@ def set_convert_frame_components(frame):
     global convert_frame_ref, b_frames_variable, include_text_overlay_variable
 
     convert_frame_ref = frame
-    CONVERT_FRAME_UI["convert_frame_row_index"] = 0
+    CONVERT_UI["convert_frame_row_index"] = 0
 
     b_frames_variable = IntVar(frame, 0)
     include_text_overlay_variable = IntVar(frame, 1)
 
     # Select file button
-    CONVERT_FRAME_UI["select_file_button"] = create_button(
+    CONVERT_UI["select_file_button"] = create_button(
         frame,
         text="Select files to convert",
         command=on_file_select_button_click
     )
-    add_widget_to_grid(CONVERT_FRAME_UI["select_file_button"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["select_file_button"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     
-    CONVERT_FRAME_UI["select_directory_button"] = create_button(
+    CONVERT_UI["select_directory_button"] = create_button(
         frame,
         text="Select directory to convert",
         command=on_directory_select_button_click
     )
-    add_widget_to_grid(CONVERT_FRAME_UI["select_directory_button"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"], column=1, padx=10, pady=5)
+    add_widget_to_grid(CONVERT_UI["select_directory_button"],
+                       row=CONVERT_UI["convert_frame_row_index"], column=1, padx=10, pady=5)
     
     inc_convert_frame_row_index()
 
@@ -91,163 +91,163 @@ def on_directory_select_button_click():
 
 def display_selected_files():
     # First creation
-    if CONVERT_FRAME_UI["file_list_label"] is None:
-        CONVERT_FRAME_UI["file_list_label"] = create_label(convert_frame_ref,
+    if CONVERT_UI["file_list_label"] is None:
+        CONVERT_UI["file_list_label"] = create_label(convert_frame_ref,
                                                            text="Selected videos:")
-        add_widget_to_grid(CONVERT_FRAME_UI["file_list_label"],
-                           row=CONVERT_FRAME_UI["convert_frame_row_index"])
+        add_widget_to_grid(CONVERT_UI["file_list_label"],
+                           row=CONVERT_UI["convert_frame_row_index"])
         inc_convert_frame_row_index()
 
-    if CONVERT_FRAME_UI["file_list_text"] is None:
-        CONVERT_FRAME_UI["file_list_text"] = create_text(convert_frame_ref, height=6)
-        add_widget_to_grid(CONVERT_FRAME_UI["file_list_text"],
-                           row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    if CONVERT_UI["file_list_text"] is None:
+        CONVERT_UI["file_list_text"] = create_text(convert_frame_ref, height=6)
+        add_widget_to_grid(CONVERT_UI["file_list_text"],
+                           row=CONVERT_UI["convert_frame_row_index"])
         inc_convert_frame_row_index()
 
     # Always refresh text
-    change_text_widget_state(CONVERT_FRAME_UI["file_list_text"], "normal")
-    CONVERT_FRAME_UI["file_list_text"].delete("1.0", "end")
+    change_text_widget_state(CONVERT_UI["file_list_text"], "normal")
+    CONVERT_UI["file_list_text"].delete("1.0", "end")
 
     for p in videos_paths:
         info = DownloadedVideoInfo.get_video_information_from_video_file(p)
         res = info.get_pretty_resolution(True)
-        CONVERT_FRAME_UI["file_list_text"].insert("end", f"• {os.path.basename(p)} ({res})\n")
+        CONVERT_UI["file_list_text"].insert("end", f"• {os.path.basename(p)} ({res})\n")
 
-    change_text_widget_state(CONVERT_FRAME_UI["file_list_text"], "disabled")
+    change_text_widget_state(CONVERT_UI["file_list_text"], "disabled")
 
     # Clear button (created once)
-    if CONVERT_FRAME_UI["clear_paths_button"] is None:
-        CONVERT_FRAME_UI["clear_paths_button"] = create_button(
+    if CONVERT_UI["clear_paths_button"] is None:
+        CONVERT_UI["clear_paths_button"] = create_button(
             convert_frame_ref,
             text="Clear paths",
             command=on_clear_path_button_click
         )
-        add_widget_to_grid(CONVERT_FRAME_UI["clear_paths_button"],
-                           row=CONVERT_FRAME_UI["convert_frame_row_index"],
+        add_widget_to_grid(CONVERT_UI["clear_paths_button"],
+                           row=CONVERT_UI["convert_frame_row_index"],
                            column=1)
         
         inc_convert_frame_row_index()
 
 def display_conversion_options():
-    if CONVERT_FRAME_UI["compression_combobox"] is not None:
+    if CONVERT_UI["compression_combobox"] is not None:
         return  # options already created
 
     # COMPRESSION
-    CONVERT_FRAME_UI["compression_combobox_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["compression_combobox_label"] = create_label(convert_frame_ref,
         text="Select compression:")
-    add_widget_to_grid(CONVERT_FRAME_UI["compression_combobox_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["compression_combobox_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["compression_combobox"] = create_combobox(
+    CONVERT_UI["compression_combobox"] = create_combobox(
         convert_frame_ref,
         command=update_conversion_options_values
     )
-    update_combobox_values(CONVERT_FRAME_UI["compression_combobox"], SUPPORTED_COMPRESSION)
-    add_widget_to_grid(CONVERT_FRAME_UI["compression_combobox"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    update_combobox_values(CONVERT_UI["compression_combobox"], SUPPORTED_COMPRESSION)
+    add_widget_to_grid(CONVERT_UI["compression_combobox"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # COLOR SPACE
-    CONVERT_FRAME_UI["color_space_combobox_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["color_space_combobox_label"] = create_label(convert_frame_ref,
         text="Select color space:")
-    add_widget_to_grid(CONVERT_FRAME_UI["color_space_combobox_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["color_space_combobox_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["color_space_combobox"] = create_combobox(
+    CONVERT_UI["color_space_combobox"] = create_combobox(
         convert_frame_ref,
         command=update_conversion_options_values
     )
-    update_combobox_values(CONVERT_FRAME_UI["color_space_combobox"], SUPPORTED_COLOR_SPACE)
-    add_widget_to_grid(CONVERT_FRAME_UI["color_space_combobox"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    update_combobox_values(CONVERT_UI["color_space_combobox"], SUPPORTED_COLOR_SPACE)
+    add_widget_to_grid(CONVERT_UI["color_space_combobox"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # BIT RATE
-    CONVERT_FRAME_UI["bit_rate_scale_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["bit_rate_scale_label"] = create_label(convert_frame_ref,
         text="Select bit rate (Mbps):")
-    add_widget_to_grid(CONVERT_FRAME_UI["bit_rate_scale_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["bit_rate_scale_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["bit_rate_scale"] = create_scale(convert_frame_ref)
-    add_widget_to_grid(CONVERT_FRAME_UI["bit_rate_scale"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    CONVERT_UI["bit_rate_scale"] = create_scale(convert_frame_ref)
+    add_widget_to_grid(CONVERT_UI["bit_rate_scale"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # AUDIO
-    CONVERT_FRAME_UI["audio_codec_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["audio_codec_label"] = create_label(convert_frame_ref,
         text="Select audio codec:")
-    add_widget_to_grid(CONVERT_FRAME_UI["audio_codec_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["audio_codec_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["audio_codec_combobox"] = create_combobox(
+    CONVERT_UI["audio_codec_combobox"] = create_combobox(
         convert_frame_ref,
         command=update_conversion_options_values
     )
-    update_combobox_values(CONVERT_FRAME_UI["audio_codec_combobox"], SUPPORTED_AUDIO_CODEC)
-    add_widget_to_grid(CONVERT_FRAME_UI["audio_codec_combobox"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    update_combobox_values(CONVERT_UI["audio_codec_combobox"], SUPPORTED_AUDIO_CODEC)
+    add_widget_to_grid(CONVERT_UI["audio_codec_combobox"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # B-FRAMES
-    CONVERT_FRAME_UI["b_frames_combobox_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["b_frames_combobox_label"] = create_label(convert_frame_ref,
         text="Enable B-Frames:")
-    add_widget_to_grid(CONVERT_FRAME_UI["b_frames_combobox_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["b_frames_combobox_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["b_frames_combobox"] = create_checkbutton(
+    CONVERT_UI["b_frames_combobox"] = create_checkbutton(
         convert_frame_ref,
         variable=b_frames_variable
     )
-    add_widget_to_grid(CONVERT_FRAME_UI["b_frames_combobox"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["b_frames_combobox"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # TEXT OVERLAY
-    CONVERT_FRAME_UI["include_text_overlay_label"] = create_label(convert_frame_ref,
+    CONVERT_UI["include_text_overlay_label"] = create_label(convert_frame_ref,
         text="Include overlay text:")
-    add_widget_to_grid(CONVERT_FRAME_UI["include_text_overlay_label"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["include_text_overlay_label"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_FRAME_UI["include_text_overlay_combobox"] = create_checkbutton(
+    CONVERT_UI["include_text_overlay_combobox"] = create_checkbutton(
         convert_frame_ref,
         variable=include_text_overlay_variable
     )
-    add_widget_to_grid(CONVERT_FRAME_UI["include_text_overlay_combobox"],
-                       row=CONVERT_FRAME_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["include_text_overlay_combobox"],
+                       row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
 def update_conversion_options_values(event=None):
-    if (not CONVERT_FRAME_UI["compression_combobox"].get()
-        or not CONVERT_FRAME_UI["color_space_combobox"].get()
-        or not CONVERT_FRAME_UI["audio_codec_combobox"].get()):
+    if (not CONVERT_UI["compression_combobox"].get()
+        or not CONVERT_UI["color_space_combobox"].get()
+        or not CONVERT_UI["audio_codec_combobox"].get()):
         return
 
-    if CONVERT_FRAME_UI["convert_button"] is None:
-        CONVERT_FRAME_UI["convert_button"] = create_button(
+    if CONVERT_UI["convert_button"] is None:
+        CONVERT_UI["convert_button"] = create_button(
             convert_frame_ref,
             text="Convert videos",
             command=on_convert_button_click
         )
-        add_widget_to_grid(CONVERT_FRAME_UI["convert_button"],
-                           row=CONVERT_FRAME_UI["convert_frame_row_index"])
+        add_widget_to_grid(CONVERT_UI["convert_button"],
+                           row=CONVERT_UI["convert_frame_row_index"])
         inc_convert_frame_row_index()
 
 
 def on_convert_button_click():
-    CONVERT_FRAME_UI["convert_status_text"] = create_label(
+    CONVERT_UI["convert_status_text"] = create_label(
         convert_frame_ref,
         "Converting video(s)...",
         foreground=LabelColor.ORANGE
     )
     add_widget_to_grid(
-        CONVERT_FRAME_UI["convert_status_text"],
-        row=CONVERT_FRAME_UI["convert_frame_row_index"]               
+        CONVERT_UI["convert_status_text"],
+        row=CONVERT_UI["convert_frame_row_index"]               
     )
 
     thread = threading.Thread(target=_convert_videos_thread)
@@ -256,17 +256,17 @@ def on_convert_button_click():
 def _convert_videos_thread():
     if not videos_paths:
         edit_label_text(
-            CONVERT_FRAME_UI["convert_status_text"],
+            CONVERT_UI["convert_status_text"],
             "No videos found for conversion",
             LabelColor.RED
         )
 
-    selected_compression = CONVERT_FRAME_UI["compression_combobox"].get()
-    selected_color_space = CONVERT_FRAME_UI["color_space_combobox"].get()
-    selected_audio_codec = CONVERT_FRAME_UI["audio_codec_combobox"].get()
+    selected_compression = CONVERT_UI["compression_combobox"].get()
+    selected_color_space = CONVERT_UI["color_space_combobox"].get()
+    selected_audio_codec = CONVERT_UI["audio_codec_combobox"].get()
     b_frames_value = b_frames_variable.get()
     include_text_overlay_value = include_text_overlay_variable.get()
-    bit_rate_value = CONVERT_FRAME_UI["bit_rate_scale"].get()
+    bit_rate_value = CONVERT_UI["bit_rate_scale"].get()
 
     for path in videos_paths:
         info = DownloadedVideoInfo.get_video_information_from_video_file(path)
@@ -329,36 +329,13 @@ def _convert_videos_thread():
             shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
         except Exception as e:
             edit_label_text(
-                CONVERT_FRAME_UI["convert_status_text"],
+                CONVERT_UI["convert_status_text"],
                 new_text=f"Error occurred during conversion: {e}",
                 foreground=LabelColor.RED
             )
 
     convert_frame_ref.after(0, lambda: edit_label_text(
-        CONVERT_FRAME_UI["convert_status_text"],
+        CONVERT_UI["convert_status_text"],
         new_text=f"Conversion of {len(videos_paths)} video(s) completed!",
         foreground=LabelColor.GREEN
     ))
-
-def determine_overlay_text_size(resolution):
-    try:
-        parsed_resolution = int(resolution.replace("p", ""))
-    except Exception:
-        parsed_resolution = resolution
-
-    for h, size in [("4K", 200), (1440, 150), ("HD", 100), (720, 75), (480, 50), (360, 30), (240, 15)]:
-        if parsed_resolution == h:
-            return size
-    return 10
-
-def calculate_gop(fps):
-    return int(fps * 1.5)
-
-def format_color_space_for_conversion(color_space):
-    return color_space.replace(":", "")
-
-def format_compression_for_conversion(compression):
-    return compression.replace("H", "")
-
-def on_clear_path_button_click():
-    print("deleting")

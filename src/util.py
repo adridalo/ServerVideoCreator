@@ -67,7 +67,12 @@ def remove_widget_from_grid(widget):
 def open_folder(path):
     os.startfile(path)
 
+# Compression constants
 SUPPORTED_COMPRESSION = [ "H264", "H265" ]
 SUPPORTED_COLOR_SPACE = [ "4:4:4", "4:2:2", "4:2:0" ]
 SUPPORTED_AUDIO_CODEC = [ "aac", "flac", "mp3", "alac", "opus", "sbc", "aptx" ]
 SUPPORTED_VIDEO_FORMAT = [ "mp4" ]
+
+# Scaling constants
+SCALES = [ "1280x720", "1920x1080", "3840x2160", "7680x4230" ]
+REFRESH_RATES = [ 25, 30, 50, 60 ]

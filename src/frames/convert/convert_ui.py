@@ -1,4 +1,4 @@
-CONVERT_FRAME_UI = {
+CONVERT_UI = {
     "convert_frame_row_index": 0, #in
     "select_file_button": None, #in
     "select_directory_button": None, #in

@@ -1,4 +1,4 @@
-DOWNLOAD_FRAME_UI = {
+DOWNLOAD_UI = {
     "download_frame_row_index": 0,
     "enter_yt_url_text": None, #in
     "url_entry": None, #in
