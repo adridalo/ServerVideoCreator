@@ -5,4 +5,4 @@ def inc_scale_frame_row_index():
     SCALE_UI["scale_frame_row_index"] += 1
 
 def format_resolution(resolution):
-    return f"{resolution[1]}x{resolution[0]}"
+    return f"{resolution[0]}x{resolution[1]}"

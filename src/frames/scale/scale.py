@@ -3,11 +3,14 @@ from tkinter import filedialog
 from src.frames.scale.scale_ui import SCALE_UI
 from src.frames.scale.util.scale_util import format_resolution, inc_scale_frame_row_index
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
-from src.util import SCALES, add_widget_to_grid, create_button, create_combobox, create_label, update_combobox_values
+from src.util import REFRESH_RATES, SCALES, add_widget_to_grid, create_button, create_combobox, create_label, edit_label_text, remove_widget_from_grid, set_combobox_value, update_combobox_values
 
 
 scale_frame_ref = None
 video_file_path = None
+video_to_scale_info = None
+selected_resolution_for_scale = None
+selected_frame_rate_for_scale = None
 
 def set_scale_frame_components(frame):
     global scale_frame_ref
@@ -28,7 +31,7 @@ def set_scale_frame_components(frame):
     inc_scale_frame_row_index()
 
 def on_video_select_click():
-    global video_file_path
+    global video_file_path, video_to_scale_info, selected_frame_rate_for_scale, selected_resolution_for_scale
 
     video_file_path = filedialog.askopenfilename(
         title="Select video",
@@ -37,45 +40,106 @@ def on_video_select_click():
 
     if video_file_path:
         info = DownloadedVideoInfo.get_video_information_from_video_file(video_file_path)
+        video_to_scale_info = info
         video_resolution = format_resolution(info.resolution)
         resolution_string = info.get_pretty_resolution(combine=True)
+        selected_video_refresh_rate = video_to_scale_info.get_pretty_resolution()[1]
 
-        # Selected video title
-        SCALE_UI["selected_video_title"] = create_label(scale_frame_ref, text=f"Selected video: {os.path.basename(video_file_path)}")
-        add_widget_to_grid(
+        if not SCALE_UI["selected_video_title"] and not SCALE_UI["selected_video_resolution"] and not SCALE_UI["scale_to_label"] and not SCALE_UI["scale_to_combobox"]:
+            # Selected video title
+            SCALE_UI["selected_video_title"] = create_label(scale_frame_ref, text=f"Selected video: {os.path.basename(video_file_path)}")
+            add_widget_to_grid(
+                SCALE_UI["selected_video_title"],
+                row=SCALE_UI["scale_frame_row_index"]
+            )
+
+            inc_scale_frame_row_index()
+
+            # Selected video resolution
+            SCALE_UI["selected_video_resolution"] = create_label(scale_frame_ref, text=f"Resolution: {resolution_string}")
+            add_widget_to_grid(
+                SCALE_UI["selected_video_resolution"],
+                row=SCALE_UI["scale_frame_row_index"]
+            )
+
+            inc_scale_frame_row_index()
+
+            # Scale to label
+            SCALE_UI["scale_to_label"] = create_label(scale_frame_ref, text="Scale to ")
+            add_widget_to_grid(
+                SCALE_UI["scale_to_label"],
+                row=SCALE_UI["scale_frame_row_index"]
+            )
+
+            inc_scale_frame_row_index()
+
+            # Scale combobox
+            SCALE_UI["scale_to_combobox"] = create_combobox(scale_frame_ref, command=on_resolution_selected)
+            update_combobox_values(SCALE_UI["scale_to_combobox"], new_values=[s for s in SCALES if s != video_resolution])
+            add_widget_to_grid(
+                SCALE_UI["scale_to_combobox"],
+                row=SCALE_UI["scale_frame_row_index"]
+            )
+
+            inc_scale_frame_row_index()
+
+        edit_label_text(
             SCALE_UI["selected_video_title"],
-            row=SCALE_UI["scale_frame_row_index"]
+            new_text=f"Selected video: {os.path.basename(video_file_path)}"
         )
-
-        inc_scale_frame_row_index()
-
-        # Selected video resolution
-        SCALE_UI["selected_video_resolution"] = create_label(scale_frame_ref, text=f"Resolution: {resolution_string}")
-        add_widget_to_grid(
+        edit_label_text(
             SCALE_UI["selected_video_resolution"],
-            row=SCALE_UI["scale_frame_row_index"]
+            new_text=f"Resolution: {resolution_string}"
         )
+        if SCALE_UI["scale_to_combobox"] and SCALE_UI["refresh_rate_combobox"]:
+            set_combobox_value(SCALE_UI["scale_to_combobox"], "")
+            set_combobox_value(SCALE_UI["refresh_rate_combobox"], "")
+            update_combobox_values(SCALE_UI["scale_to_combobox"], new_values=[s for s in SCALES if s != video_resolution])
+            update_combobox_values(SCALE_UI["refresh_rate_combobox"], new_values=[r for r in REFRESH_RATES if r != selected_video_refresh_rate])
+            selected_resolution_for_scale = None
+            selected_frame_rate_for_scale = None
 
-        inc_scale_frame_row_index()
+def on_resolution_selected(e):
+    global selected_resolution_for_scale
 
-        # Scale to label
-        SCALE_UI["scale_to_label"] = create_label(scale_frame_ref, text="Scale to ")
+    selected_resolution_for_scale = SCALE_UI["scale_to_combobox"].get()
+
+    if not SCALE_UI["refresh_rate_label"] and not SCALE_UI["refresh_rate_combobox"]:
+        # Refresh rate label
+        SCALE_UI["refresh_rate_label"] = create_label(scale_frame_ref, text="with Refresh rate")
         add_widget_to_grid(
-            SCALE_UI["scale_to_label"],
+            SCALE_UI["refresh_rate_label"],
             row=SCALE_UI["scale_frame_row_index"]
         )
 
         inc_scale_frame_row_index()
 
-        # Scale combobox
-        SCALE_UI["scale_to_combobox"] = create_combobox(scale_frame_ref, command=on_scale_selected)
-        update_combobox_values(SCALE_UI["scale_to_combobox"], new_values=[f for f in SCALES if f != video_resolution])
+        # Refresh rate combobox
+        SCALE_UI["refresh_rate_combobox"] = create_combobox(scale_frame_ref, command=on_refresh_rate_selected)
+        update_combobox_values(SCALE_UI["refresh_rate_combobox"], new_values=[r for r in REFRESH_RATES if r != video_to_scale_info.get_pretty_resolution()[1]])
         add_widget_to_grid(
-            SCALE_UI["scale_to_combobox"],
+            SCALE_UI["refresh_rate_combobox"],
+            row=SCALE_UI["scale_frame_row_index"]
+        )
+
+        inc_scale_frame_row_index()
+        
+def on_refresh_rate_selected(e):
+    global selected_frame_rate_for_scale
+
+    selected_frame_rate_for_scale = SCALE_UI["refresh_rate_combobox"].get()
+    if not SCALE_UI["scale_button"]:
+        # Scale button
+        SCALE_UI["scale_button"] = create_button(scale_frame_ref, text="Scale video", command=on_scale_button_click)
+        add_widget_to_grid(
+            SCALE_UI["scale_button"],
             row=SCALE_UI["scale_frame_row_index"]
         )
 
         inc_scale_frame_row_index()
 
-def on_scale_selected(e):
-    pass
+def on_scale_button_click():
+    print(f"""
+    Resolution: {selected_resolution_for_scale},
+    Frame rate: {selected_frame_rate_for_scale} 
+""")

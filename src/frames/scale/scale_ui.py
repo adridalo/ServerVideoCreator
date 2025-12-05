@@ -5,8 +5,8 @@ SCALE_UI = {
     "selected_video_resolution": None, #in
     "scale_to_label": None, #in
     "scale_to_combobox": None, #in
-    "refresh_rate_label": None,
-    "refresh_rate_combobox": None,
-    "scale_button": None,
+    "refresh_rate_label": None, #in
+    "refresh_rate_combobox": None, #in
+    "scale_button": None, #in
     "scaling_status": None
 }

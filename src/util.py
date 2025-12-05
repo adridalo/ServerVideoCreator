@@ -59,6 +59,9 @@ def add_to_text_widget(text_widget, text):
 def add_widget_to_grid(widget, row=0, column=0, padx=10, pady=5, columnspan=1):
     widget.grid(row=row, column=column, padx=padx, pady=pady, sticky=W, columnspan=columnspan)
 
+def set_combobox_value(combobox, value):
+    combobox.set(value)
+
 def remove_widget_from_grid(widget):
     if widget != None:
         widget.grid_remove()
