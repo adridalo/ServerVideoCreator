@@ -1,7 +1,11 @@
 import os
+import threading
 from tkinter import filedialog
+
+import ffmpeg
 from src.frames.scale.scale_ui import SCALE_UI
 from src.frames.scale.util.scale_util import format_resolution, inc_scale_frame_row_index
+from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.util import REFRESH_RATES, SCALES, add_widget_to_grid, create_button, create_combobox, create_label, edit_label_text, remove_widget_from_grid, set_combobox_value, update_combobox_values
 
@@ -139,7 +143,36 @@ def on_refresh_rate_selected(e):
         inc_scale_frame_row_index()
 
 def on_scale_button_click():
-    print(f"""
-    Resolution: {selected_resolution_for_scale},
-    Frame rate: {selected_frame_rate_for_scale} 
-""")
+    if selected_frame_rate_for_scale and selected_resolution_for_scale:
+        SCALE_UI["scaling_status"] = create_label(scale_frame_ref, text="Scaling...", foreground=LabelColor.ORANGE)
+        add_widget_to_grid(
+            SCALE_UI["scaling_status"],
+            row=SCALE_UI["scale_frame_row_index"]
+        )
+
+        inc_scale_frame_row_index()
+        
+        try:
+            thread = threading.Thread(target=_video_scaling_thread)
+            thread.start()
+        except Exception as e:
+            edit_label_text(
+                SCALE_UI["scaling_status"],
+                new_text=f"Error occurred during scaling: {e}",
+                foreground=LabelColor.RED
+            )
+
+def _video_scaling_thread():
+    ffmpeg.input(
+        video_file_path
+    ).output(
+        os.path.join(".", os.path.basename(video_file_path)),
+        vf = f"scale={selected_resolution_for_scale}:flags=lanczos",
+        r=selected_frame_rate_for_scale
+    ).run()
+
+    edit_label_text(
+        SCALE_UI["scaling_status"],
+        new_text="Scaling completed successfully!",
+        foreground=LabelColor.GREEN
+    )
