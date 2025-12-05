@@ -1,4 +1,5 @@
 import os
+import shutil
 import threading
 from tkinter import filedialog
 
@@ -163,16 +164,35 @@ def on_scale_button_click():
             )
 
 def _video_scaling_thread():
+    video_file_name = os.path.basename(video_file_path)
+
     ffmpeg.input(
         video_file_path
     ).output(
-        os.path.join(".", os.path.basename(video_file_path)),
+        video_file_name,
         vf = f"scale={selected_resolution_for_scale}:flags=lanczos",
         r=selected_frame_rate_for_scale
     ).run()
+    move_video_to_folder(video_file_name)
 
     edit_label_text(
         SCALE_UI["scaling_status"],
         new_text="Scaling completed successfully!",
         foreground=LabelColor.GREEN
     )
+
+def move_video_to_folder(video):
+    print(1)
+    scaled_video_file = next((f for f in os.listdir(os.path.join(".")) if f == video))
+
+    if not scaled_video_file:
+        edit_label_text(
+            SCALE_UI["scaling_status"],
+            new_text="File not found",
+            foreground=LabelColor.RED
+        )
+
+    resolution_string = video_to_scale_info.get_pretty_resolution()
+    target_folder = os.path.join("scaled", resolution_string[0], str(resolution_string[1]))
+    os.makedirs(target_folder, exist_ok=True)
+    shutil.move(scaled_video_file, os.path.join(target_folder, os.path.basename(scaled_video_file)))
