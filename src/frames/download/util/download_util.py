@@ -16,7 +16,8 @@ def yt_dlp_fetch_video_info(url):
         "listformats": True,
         "quiet": True,
         "forcejson": True,
-        "dump_single_json": True
+        "dump_single_json": True,
+        "cookiefile": 'cookies.txt'
     }
 
     if get_proxy() != "":
