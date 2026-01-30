@@ -62,5 +62,7 @@ class DownloadedVideoInfo():
             return ("HD", rounded_fps) if not combine else f"HD{rounded_fps}"
         elif height == 2160:
             return ("4K", rounded_fps) if not combine else f"4K{rounded_fps}"
+        elif height == 4230:
+            return ("8K", rounded_fps) if not combine else f"8K{rounded_fps}"
         else:
             return (f"{height}p", rounded_fps) if not combine else f"{height}p{rounded_fps}"
