@@ -20,7 +20,7 @@ def main():
     notebook.pack(fill="both", expand=True)
 
     download_frame = Frame(notebook)
-    notebook.add(download_frame, text="Download")
+    notebook.add(download_frame, text="Download (Do not use)")
     set_download_frame_components(download_frame)
 
     convert_frame = Frame(notebook)

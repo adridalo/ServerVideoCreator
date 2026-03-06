@@ -275,8 +275,13 @@ def _convert_videos_thread():
         if include_text_overlay_value == 1:
             overlay_text_size = determine_overlay_text_size(res[0])
 
-        split_file_name = os.path.splitext(path)
-        output_path = f"{"BF_" if b_frames_value else ""}{os.path.basename(path)}_{res_combined}_{selected_compression}_{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}{bit_rate_value}bits{split_file_name[1]}"
+        file_name_no_ext, ext = os.path.splitext(os.path.basename(path))
+        output_path = (
+            f'{"BF_" if b_frames_value else ""}'
+            f'{file_name_no_ext}_{res_combined}_{selected_compression}_'
+            f'{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}'
+            f'{bit_rate_value}bits{ext}'
+        )
         
         # Video format options
         vf = (
@@ -291,7 +296,7 @@ def _convert_videos_thread():
         if b_frames_value:
             # Add additional video format option which includes text overlay for B Frames to video
             vf += (f",drawtext=fontfile=InfiniteBeyond.ttf:text='B-Frames':fontcolor=red:"
-                   f"fontsize={overlay_text_size}:x=(w-text_w)/2:y=h-text_h-25")
+                   f"fontsize={determine_overlay_text_size(res[0])}:x=(w-text_w)/2:y=h-text_h-25")
             
         try:
             stream_input = ffmpeg.input(path)
