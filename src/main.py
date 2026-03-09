@@ -19,9 +19,9 @@ def main():
     notebook = ttk.Notebook(root)
     notebook.pack(fill="both", expand=True)
 
-    download_frame = Frame(notebook)
-    notebook.add(download_frame, text="Download (Do not use)")
-    set_download_frame_components(download_frame)
+    # download_frame = Frame(notebook)
+    # notebook.add(download_frame, text="Download (Do not use)")
+    # set_download_frame_components(download_frame)
 
     convert_frame = Frame(notebook)
     notebook.add(convert_frame, text="Convert")

@@ -166,6 +166,8 @@ def on_download_button_click():
     thread.start()
 
 def _download_video_thread():
+    global downloaded_video_path
+
     resolution_format = RawVideoFormatInfo.get_format_from_string(selected_resolution)
     audio_format = RawAudioFormatInfo.get_format_from_string(selected_audio)
     video_url = DOWNLOAD_UI["url_entry"].get()
@@ -201,20 +203,48 @@ def _download_video_thread():
         cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
         yt_dlp_options = {
             "format": f"{resolution_format.id}+{audio_format.id}",
-            "outtmpl": os.path.join(".",f"{cleaned_title}.%(ext)s"),
+            "outtmpl": os.path.join(".", f"{cleaned_title}.%(ext)s"),
             "restrictfilenames": True,
-            "progress_hooks": [output_path_hook]
+            "progress_hooks": [output_path_hook],
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0"
+            },
+            "http_chunk_size": 10485760
         }
 
-        # Get proxy information
         proxy = get_proxy()
-        # If a proxy value is retrieved
         if proxy:
-            # Add it to YDL options
             yt_dlp_options["proxy"] = proxy
 
         with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
-            ydl.download(video_url)
+            ydl.download([video_url])
+
+        # import subprocess
+
+        # command = [
+        #     "yt-dlp",
+        #     "-f", f"{resolution_format.id}+{audio_format.id}",
+        #     "-o", os.path.join(".",f"{cleaned_title}.%(ext)s"),
+        #     "--print", "after_move:filepath",
+        #     "--restrict-filenames"
+        # ]
+
+        # proxy = get_proxy()
+        # if proxy:
+        #     command.extend(["--proxy", proxy])
+
+        # command.append(video_url)
+
+        # results = subprocess.run(
+        #     command, 
+        #     check=True, 
+        #     stdout=subprocess.PIPE, 
+        #     stderr=subprocess.PIPE,
+        #     text=True
+        # )
+
+        # downloaded_video_path = results.stdout.strip().split("\n")[-1]
+
         downloaded_video_title = open_title_window(cleaned_title)
         move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
 
@@ -229,6 +259,7 @@ def _download_video_thread():
 
         inc_download_frame_row_index()
     except Exception as e:
+        print(e)
         edit_label_text(DOWNLOAD_UI["download_status_text"], f"Download unsuccessful: {e}", foreground=LabelColor.RED)
 
 def open_title_window(original_title):
