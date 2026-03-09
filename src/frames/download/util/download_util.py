@@ -2,28 +2,37 @@ import yt_dlp
 from src.frames.download.download_ui import DOWNLOAD_UI
 from src.types.models.raw_audio_format_info import RawAudioFormatInfo
 from src.types.models.raw_video_format_info import RawVideoFormatInfo
-from src.util import get_proxy
+from src.util import get_proxy, resource_path
 
 
 def inc_download_frame_row_index():
     DOWNLOAD_UI["download_frame_row_index"] += 1
 
 def yt_dlp_fetch_video_info(url):
-    if url is None or len(url) == 0:
-        return
+    if not url:
+        return 
     
     yt_dlp_options = {
-        "listformats": True,
         "quiet": True,
-        "forcejson": True,
-        "dump_single_json": True,
-        "cookiefile": 'cookies.txt'
+        "javascript_executable": resource_path("qjs.exe"),
+        "cookiefile": resource_path("cookies.txt"),
+        "remote_components": ["ejs:github"],
+        "ffmpeg_location": resource_path("."),
+        "extractor_args": {
+            "youtube": {
+                # These two are the "sweet spot" for 2026—they give HD 
+                # formats without forcing the PO Token browser popup.
+                "player_client": ["ios", "android_vr"],
+                "player_js_version": ["actual"]
+            }
+        },
     }
 
-    if get_proxy() != "":
+    if get_proxy():
         yt_dlp_options["proxy"] = get_proxy()
 
-    with yt_dlp.YoutubeDL(params=yt_dlp_options) as ydl:
+    with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
+        # download=False already prevents the file download
         video_info = ydl.extract_info(url, download=False)
         return video_info
     

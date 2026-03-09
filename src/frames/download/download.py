@@ -2,17 +2,18 @@ import os
 import re
 import shutil
 import threading
-from tkinter import Button, Label, Toplevel
+from tkinter import Toplevel
 
 import yt_dlp
 
 from src.frames.download.download_ui import DOWNLOAD_UI
 from src.frames.download.util.download_util import get_audio_formats_from_video_info, get_title_and_duration_from_video, get_video_formats_from_video_info, inc_download_frame_row_index, yt_dlp_fetch_video_info
+from src.util import BASE_APP_DIR
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.types.models.raw_audio_format_info import RawAudioFormatInfo
 from src.types.models.raw_video_format_info import RawVideoFormatInfo
-from src.util import add_widget_to_grid, create_button, create_combobox, create_entry, create_label, edit_label_text, get_proxy, open_folder, remove_widget_from_grid, update_combobox_values
+from src.util import add_widget_to_grid, create_button, create_combobox, create_entry, create_label, edit_label_text, get_proxy, open_folder, remove_widget_from_grid, resource_path, update_combobox_values
 
 download_frame_ref = None
 selected_resolution = None
@@ -201,15 +202,29 @@ def _download_video_thread():
 
 
         cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
+        save_path = os.path.join(BASE_APP_DIR, f"{cleaned_title}.%(ext)s")
         yt_dlp_options = {
+            # Uses the IDs selected from your UI dropdowns
             "format": f"{resolution_format.id}+{audio_format.id}",
-            "outtmpl": os.path.join(".", f"{cleaned_title}.%(ext)s"),
+            "outtmpl": save_path,
             "restrictfilenames": True,
             "progress_hooks": [output_path_hook],
-            "http_headers": {
-                "User-Agent": "Mozilla/5.0"
+
+            "javascript_executable": resource_path("qjs.exe"),
+            "ffmpeg_location": resource_path("."), 
+            "cookiefile": resource_path("cookies.txt"),
+            
+            # Add this to match your fetch logic
+            "remote_components": ["ejs:github"],
+    
+            "extractor_args": {
+                "youtube": {
+                    # CHANGE: Match the fetching clients to avoid PO Token errors
+                    "player_client": ["ios", "android_vr"],
+                    "player_js_version": ["actual"]
+                    # REMOVED: "skip": ["dash", "hls"] 
+                }
             },
-            "http_chunk_size": 10485760
         }
 
         proxy = get_proxy()
@@ -218,32 +233,6 @@ def _download_video_thread():
 
         with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
             ydl.download([video_url])
-
-        # import subprocess
-
-        # command = [
-        #     "yt-dlp",
-        #     "-f", f"{resolution_format.id}+{audio_format.id}",
-        #     "-o", os.path.join(".",f"{cleaned_title}.%(ext)s"),
-        #     "--print", "after_move:filepath",
-        #     "--restrict-filenames"
-        # ]
-
-        # proxy = get_proxy()
-        # if proxy:
-        #     command.extend(["--proxy", proxy])
-
-        # command.append(video_url)
-
-        # results = subprocess.run(
-        #     command, 
-        #     check=True, 
-        #     stdout=subprocess.PIPE, 
-        #     stderr=subprocess.PIPE,
-        #     text=True
-        # )
-
-        # downloaded_video_path = results.stdout.strip().split("\n")[-1]
 
         downloaded_video_title = open_title_window(cleaned_title)
         move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
@@ -293,7 +282,13 @@ def open_title_window(original_title):
 
 def move_video_to_folder(title, **kwargs):
     global downloaded_video_path 
-
+    
+    print(f"Checking for file at: {os.path.abspath(downloaded_video_path)}")
+    if not os.path.exists(downloaded_video_path):
+        print(f"CRITICAL ERROR: File not found at {downloaded_video_path}")
+        return
+    
+    print(f"Getting video information for: {title}")
     downloaded_video_info = DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path)
     if not downloaded_video_info:
         edit_label_text(
@@ -302,12 +297,17 @@ def move_video_to_folder(title, **kwargs):
             foreground=LabelColor.RED,
             wraplength=100
         )
-        return
+        return  
     
+    print("Information retrieved:", downloaded_video_info.path)
     downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()[0]
 
+    print("Video resolution:", downloaded_video_pretty_resolution)
+
     target_folder = os.path.join("raw", downloaded_video_pretty_resolution, str(downloaded_video_info.fps))
+    print("Target folder:", target_folder)
     os.makedirs(target_folder, exist_ok=True)
+    print("Target directory created")
 
     renamed_video_title = kwargs.get("renamed_title")
     if renamed_video_title and renamed_video_title != title:

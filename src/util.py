@@ -1,22 +1,42 @@
 import os
+import sys
 from tkinter import W, Button, Entry, Label, Scale, Text, ttk
 
 from src.types.enums.color import LabelColor
 
+BASE_APP_DIR = None
+
+if getattr(sys, "frozen", False):
+    BASE_APP_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+BASE_APP_DIR = os.path.normpath(BASE_APP_DIR)
+
+def resource_path(relative_path):
+    import sys
+    import os
+
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def get_proxy():
     import os, json
 
-    base_path = os.path.abspath(".")
+    config_path = resource_path("proxy.config.json")
 
-    config_path = os.path.join(base_path, "proxy.config.json")
     if os.path.exists(config_path):
-        with open(config_path, "r") as f:
-            data = json.load(f)
-            return data.get("proxy", "")
-        
-    else:
-        return ""
+        try:
+            with open(config_path, "r") as f:
+                data = json.load(f)
+                return data.get("proxy", "")
+        except:
+            return ""
+    return ""
     
 def to_mb(bytes):
     return f"{bytes / 1_000_000:.2f}Mb" if bytes else "n/a"
