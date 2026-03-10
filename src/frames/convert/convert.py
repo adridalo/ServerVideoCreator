@@ -302,8 +302,6 @@ def _convert_videos_thread():
                    f"fontsize={determine_overlay_text_size(res[0])}:x=(w-text_w)/2:y=h-text_h-25")
             
         try:
-            ffmpeg_executable = resource_path("ffmpeg.exe")
-
             stream_input = ffmpeg.input(path)
 
             output_options = {
@@ -324,7 +322,9 @@ def _convert_videos_thread():
                 output_path,
                 **output_options
             )
-
+            
+            ffmpeg_executable = resource_path("ffmpeg.exe")
+            
             ffmpeg.run(stream, cmd=ffmpeg_executable)
 
             target_dir = os.path.join(
