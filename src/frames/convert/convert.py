@@ -10,7 +10,7 @@ from src.frames.convert.convert_ui import CONVERT_UI
 from src.frames.convert.util.convert_util import calculate_gop, determine_overlay_text_size, format_color_space_for_conversion, format_compression_for_conversion, inc_convert_frame_row_index, on_clear_path_button_click
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
-from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, SUPPORTED_VIDEO_FORMAT, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, update_combobox_values
+from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, SUPPORTED_VIDEO_FORMAT, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, resource_path, update_combobox_values
 
 convert_frame_ref = None
 videos_paths = []
@@ -119,7 +119,7 @@ def display_selected_files():
     if CONVERT_UI["clear_paths_button"] is None:
         CONVERT_UI["clear_paths_button"] = create_button(
             convert_frame_ref,
-            text="Clear paths",
+            text="Clear paths (Not implemented)",
             command=on_clear_path_button_click
         )
         add_widget_to_grid(CONVERT_UI["clear_paths_button"],
@@ -282,12 +282,15 @@ def _convert_videos_thread():
             f'{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}'
             f'{bit_rate_value}bits{ext}'
         )
+
+        font_path = resource_path("InfiniteBeyond.ttf")
+        sanitized_font_path = font_path.replace("\\", "/").replace(":", "\\\\:")
         
         # Video format options
         vf = (
             f"format=yuv{format_color_space_for_conversion(selected_color_space)}p"
             + (
-                f",drawtext=fontfile=InfiniteBeyond.ttf:text='{res_combined}     {selected_compression}     {format_color_space_for_conversion(selected_color_space)}     {bit_rate_value} bits':fontcolor=white:fontsize={overlay_text_size}:x=(w-text_w)/2:y=25"
+                f",drawtext=fontfile={sanitized_font_path}:text='{res_combined}     {selected_compression}     {format_color_space_for_conversion(selected_color_space)}     {bit_rate_value} bits':fontcolor=white:fontsize={overlay_text_size}:x=(w-text_w)/2:y=25"
                 if include_text_overlay_value else ""
             )
         )
@@ -295,10 +298,12 @@ def _convert_videos_thread():
         # If B Frames were enabled
         if b_frames_value:
             # Add additional video format option which includes text overlay for B Frames to video
-            vf += (f",drawtext=fontfile=InfiniteBeyond.ttf:text='B-Frames':fontcolor=red:"
+            vf += (f",drawtext=fontfile={sanitized_font_path}:text='B-Frames':fontcolor=red:"
                    f"fontsize={determine_overlay_text_size(res[0])}:x=(w-text_w)/2:y=h-text_h-25")
             
         try:
+            ffmpeg_executable = resource_path("ffmpeg.exe")
+
             stream_input = ffmpeg.input(path)
 
             output_options = {
@@ -320,7 +325,7 @@ def _convert_videos_thread():
                 **output_options
             )
 
-            ffmpeg.run(stream)
+            ffmpeg.run(stream, cmd=ffmpeg_executable)
 
             target_dir = os.path.join(
                 "converted", 
