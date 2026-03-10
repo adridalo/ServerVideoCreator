@@ -212,6 +212,7 @@ def _download_video_thread():
 
             "javascript_executable": resource_path("qjs.exe"),
             "ffmpeg_location": resource_path("."), 
+            "ffprobe_location": resource_path("."),
             "cookiefile": resource_path("cookies.txt"),
             
             # Add this to match your fetch logic
@@ -283,12 +284,9 @@ def open_title_window(original_title):
 def move_video_to_folder(title, **kwargs):
     global downloaded_video_path 
     
-    print(f"Checking for file at: {os.path.abspath(downloaded_video_path)}")
     if not os.path.exists(downloaded_video_path):
-        print(f"CRITICAL ERROR: File not found at {downloaded_video_path}")
         return
     
-    print(f"Getting video information for: {title}")
     downloaded_video_info = DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path)
     if not downloaded_video_info:
         edit_label_text(
@@ -299,15 +297,11 @@ def move_video_to_folder(title, **kwargs):
         )
         return  
     
-    print("Information retrieved:", downloaded_video_info.path)
     downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()[0]
 
-    print("Video resolution:", downloaded_video_pretty_resolution)
 
     target_folder = os.path.join("raw", downloaded_video_pretty_resolution, str(downloaded_video_info.fps))
-    print("Target folder:", target_folder)
     os.makedirs(target_folder, exist_ok=True)
-    print("Target directory created")
 
     renamed_video_title = kwargs.get("renamed_title")
     if renamed_video_title and renamed_video_title != title:

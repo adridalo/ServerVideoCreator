@@ -2,6 +2,8 @@ import math
 import os
 import ffmpeg
 
+from src.util import resource_path
+
 
 class DownloadedVideoInfo():
     def __init__(self, name, path, resolution, fps):
@@ -12,7 +14,8 @@ class DownloadedVideoInfo():
 
     def get_video_information_from_video_file(video_file):
         try:
-            probe = ffmpeg.probe(video_file)
+            ffprobe_executable = resource_path("ffprobe.exe")
+            probe = ffmpeg.probe(video_file, cmd=ffprobe_executable)
 
             video_stream = next(
                 (stream for stream in probe["streams"] if stream["codec_type"] == "video"),

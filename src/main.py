@@ -1,5 +1,3 @@
-import os
-import sys
 from tkinter import Frame, Tk, ttk
 
 from src.frames.convert.convert import set_convert_frame_components
