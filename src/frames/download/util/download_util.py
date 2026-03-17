@@ -18,14 +18,14 @@ def yt_dlp_fetch_video_info(url):
         "cookiefile": resource_path("cookies.txt"),
         "remote_components": ["ejs:github"],
         "ffmpeg_location": resource_path("."),
-        "extractor_args": {
-            "youtube": {
-                # These two are the "sweet spot" for 2026—they give HD 
-                # formats without forcing the PO Token browser popup.
-                "player_client": ["ios", "android_vr"],
-                "player_js_version": ["actual"]
-            }
-        },
+        # "extractor_args": {
+        #     "youtube": {
+        #         # These two are the "sweet spot" for 2026—they give HD 
+        #         # formats without forcing the PO Token browser popup.
+        #         "player_client": ["ios", "android_vr"],
+        #         "player_js_version": ["actual"]
+        #     }
+        # },
     }
 
     if get_proxy():

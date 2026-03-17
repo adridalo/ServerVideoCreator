@@ -218,14 +218,14 @@ def _download_video_thread():
             # Add this to match your fetch logic
             "remote_components": ["ejs:github"],
     
-            "extractor_args": {
-                "youtube": {
-                    # CHANGE: Match the fetching clients to avoid PO Token errors
-                    "player_client": ["ios", "android_vr"],
-                    "player_js_version": ["actual"]
-                    # REMOVED: "skip": ["dash", "hls"] 
-                }
-            },
+            # "extractor_args": {
+            #     "youtube": {
+            #         # CHANGE: Match the fetching clients to avoid PO Token errors
+            #         "player_client": ["ios", "android_vr"],
+            #         "player_js_version": ["actual"]
+            #         # REMOVED: "skip": ["dash", "hls"] 
+            #     }
+            # },
         }
 
         proxy = get_proxy()
