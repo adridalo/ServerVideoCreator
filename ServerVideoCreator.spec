@@ -5,7 +5,7 @@ a = Analysis(
     ['src\\main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('cookies.txt', '.'), ('InfiniteBeyond.ttf', '.'), ('proxy.config.json', '.'), ('qjs.exe', '.'), ('ffmpeg.exe', '.'), ('ffprobe.exe', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
