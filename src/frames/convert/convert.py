@@ -119,7 +119,7 @@ def display_selected_files():
     if CONVERT_UI["clear_paths_button"] is None:
         CONVERT_UI["clear_paths_button"] = create_button(
             convert_frame_ref,
-            text="Clear paths (Not implemented)",
+            text="Clear paths",
             command=on_clear_path_button_click
         )
         add_widget_to_grid(CONVERT_UI["clear_paths_button"],
