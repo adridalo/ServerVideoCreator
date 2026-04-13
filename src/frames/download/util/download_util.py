@@ -18,21 +18,18 @@ def yt_dlp_fetch_video_info(url):
         "cookiefile": resource_path("cookies.txt"),
         "remote_components": ["ejs:github"],
         "ffmpeg_location": resource_path("."),
-        # "extractor_args": {
-        #     "youtube": {
-        #         # These two are the "sweet spot" for 2026—they give HD 
-        #         # formats without forcing the PO Token browser popup.
-        #         "player_client": ["ios", "android_vr"],
-        #         "player_js_version": ["actual"]
-        #     }
-        # },
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["ios", "android_vr"],
+                "player_js_version": ["actual"]
+            }
+        },
     }
 
     if get_proxy():
         yt_dlp_options["proxy"] = get_proxy()
 
     with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
-        # download=False already prevents the file download
         video_info = ydl.extract_info(url, download=False)
         return video_info
     
@@ -79,3 +76,16 @@ def get_title_and_duration_from_video(video_info):
         video_info.get("title", "Unknown title"),
         video_info.get("duration_string") or video_info.get("duration") or "Unknown duration"
     )
+
+def wait_for_file_release(path, timeout=10):
+    import time
+
+    start = time.time()
+    while True:
+        try:
+            with open(path, 'rb'):
+                return True
+        except PermissionError:
+            if time.time() - start > timeout:
+                return False
+            time.sleep(0.3)

@@ -52,7 +52,6 @@ def on_video_select_click():
     video_to_scale_info = info
     
     # format_resolution converts internal resolution (like 1080) to your SCALES constants (like "HD")
-    video_resolution = format_resolution(info.resolution)
     resolution_string = info.get_pretty_resolution(combine=True)
 
     if not SCALE_UI.get("selected_video_title"):

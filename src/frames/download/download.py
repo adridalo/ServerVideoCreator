@@ -7,7 +7,7 @@ from tkinter import Toplevel
 import yt_dlp
 
 from src.frames.download.download_ui import DOWNLOAD_UI
-from src.frames.download.util.download_util import get_audio_formats_from_video_info, get_title_and_duration_from_video, get_video_formats_from_video_info, inc_download_frame_row_index, yt_dlp_fetch_video_info
+from src.frames.download.util.download_util import get_audio_formats_from_video_info, get_title_and_duration_from_video, get_video_formats_from_video_info, inc_download_frame_row_index, wait_for_file_release, yt_dlp_fetch_video_info
 from src.util import BASE_APP_DIR
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
@@ -204,28 +204,25 @@ def _download_video_thread():
         cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
         save_path = os.path.join(BASE_APP_DIR, f"{cleaned_title}.%(ext)s")
         yt_dlp_options = {
-            # Uses the IDs selected from your UI dropdowns
             "format": f"{resolution_format.id}+{audio_format.id}",
             "outtmpl": save_path,
             "restrictfilenames": True,
             "progress_hooks": [output_path_hook],
+            "nopart": True,
 
             "javascript_executable": resource_path("qjs.exe"),
             "ffmpeg_location": resource_path("."), 
             "ffprobe_location": resource_path("."),
             "cookiefile": resource_path("cookies.txt"),
             
-            # Add this to match your fetch logic
             "remote_components": ["ejs:github"],
     
-            # "extractor_args": {
-            #     "youtube": {
-            #         # CHANGE: Match the fetching clients to avoid PO Token errors
-            #         "player_client": ["ios", "android_vr"],
-            #         "player_js_version": ["actual"]
-            #         # REMOVED: "skip": ["dash", "hls"] 
-            #     }
-            # },
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["ios", "android_vr"],
+                    "player_js_version": ["actual"]
+                }
+            },
         }
 
         proxy = get_proxy()
@@ -236,6 +233,9 @@ def _download_video_thread():
             ydl.download([video_url])
 
         downloaded_video_title = open_title_window(cleaned_title)
+        if not wait_for_file_release(downloaded_video_path):
+            raise Exception("File is locked after download")
+        
         move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
 
         edit_label_text(DOWNLOAD_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
