@@ -7,7 +7,7 @@ from tkinter import IntVar, filedialog
 import ffmpeg
 
 from src.frames.convert.convert_ui import CONVERT_UI
-from src.frames.convert.util.convert_util import calculate_gop, determine_overlay_text_size, format_color_space_for_conversion, format_compression_for_conversion, inc_convert_frame_row_index, on_clear_path_button_click
+from src.frames.convert.util.convert_util import calculate_gop, determine_overlay_text_size, format_color_space_for_conversion, format_compression_for_conversion, inc_convert_frame_row_index
 from src.types.enums.color import LabelColor
 from src.types.models.downloaded_video_info import DownloadedVideoInfo
 from src.util import SUPPORTED_AUDIO_CODEC, SUPPORTED_COLOR_SPACE, SUPPORTED_COMPRESSION, SUPPORTED_VIDEO_FORMAT, add_to_text_widget, add_widget_to_grid, change_text_widget_state, create_button, create_checkbutton, create_combobox, create_label, create_scale, create_text, edit_label_text, remove_widget_from_grid, resource_path, update_combobox_values
@@ -64,6 +64,7 @@ def on_file_select_button_click():
 
     display_selected_files()
     display_conversion_options()
+    update_conversion_options_values()
 
 def on_directory_select_button_click():
     global videos_paths, last_opened_navigation_path
@@ -88,6 +89,7 @@ def on_directory_select_button_click():
 
         display_selected_files()
         display_conversion_options()
+        update_conversion_options_values()
 
 def display_selected_files():
     # First creation
@@ -133,110 +135,105 @@ def display_conversion_options():
         return  # options already created
 
     # COMPRESSION
-    CONVERT_UI["compression_combobox_label"] = create_label(convert_frame_ref,
-        text="Select compression:")
-    add_widget_to_grid(CONVERT_UI["compression_combobox_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["compression_combobox_label"] = create_label(convert_frame_ref, text="Select compression:")
+    add_widget_to_grid(CONVERT_UI["compression_combobox_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     CONVERT_UI["compression_combobox"] = create_combobox(
-        convert_frame_ref,
-        command=update_conversion_options_values
+        convert_frame_ref, command=update_conversion_options_values
     )
     update_combobox_values(CONVERT_UI["compression_combobox"], SUPPORTED_COMPRESSION)
-    add_widget_to_grid(CONVERT_UI["compression_combobox"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["compression_combobox"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # COLOR SPACE
-    CONVERT_UI["color_space_combobox_label"] = create_label(convert_frame_ref,
-        text="Select color space:")
-    add_widget_to_grid(CONVERT_UI["color_space_combobox_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["color_space_combobox_label"] = create_label(convert_frame_ref, text="Select color space:")
+    add_widget_to_grid(CONVERT_UI["color_space_combobox_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     CONVERT_UI["color_space_combobox"] = create_combobox(
-        convert_frame_ref,
-        command=update_conversion_options_values
+        convert_frame_ref, command=update_conversion_options_values
     )
     update_combobox_values(CONVERT_UI["color_space_combobox"], SUPPORTED_COLOR_SPACE)
-    add_widget_to_grid(CONVERT_UI["color_space_combobox"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["color_space_combobox"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # BIT RATE
-    CONVERT_UI["bit_rate_scale_label"] = create_label(convert_frame_ref,
-        text="Select bit rate (Mbps):")
-    add_widget_to_grid(CONVERT_UI["bit_rate_scale_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["bit_rate_scale_label"] = create_label(convert_frame_ref, text="Select bit rate (Mbps):")
+    add_widget_to_grid(CONVERT_UI["bit_rate_scale_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     CONVERT_UI["bit_rate_scale"] = create_scale(convert_frame_ref)
-    add_widget_to_grid(CONVERT_UI["bit_rate_scale"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["bit_rate_scale"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    # AUDIO
-    CONVERT_UI["audio_codec_label"] = create_label(convert_frame_ref,
-        text="Select audio codec:")
-    add_widget_to_grid(CONVERT_UI["audio_codec_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    # AUDIO CODEC
+    CONVERT_UI["audio_codec_label"] = create_label(convert_frame_ref, text="Select audio codec:")
+    add_widget_to_grid(CONVERT_UI["audio_codec_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     CONVERT_UI["audio_codec_combobox"] = create_combobox(
-        convert_frame_ref,
-        command=update_conversion_options_values
+        convert_frame_ref, command=update_conversion_options_values
     )
     update_combobox_values(CONVERT_UI["audio_codec_combobox"], SUPPORTED_AUDIO_CODEC)
-    add_widget_to_grid(CONVERT_UI["audio_codec_combobox"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["audio_codec_combobox"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # B-FRAMES
-    CONVERT_UI["b_frames_combobox_label"] = create_label(convert_frame_ref,
-        text="Enable B-Frames:")
-    add_widget_to_grid(CONVERT_UI["b_frames_combobox_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["b_frames_combobox_label"] = create_label(convert_frame_ref, text="Enable B-Frames:")
+    add_widget_to_grid(CONVERT_UI["b_frames_combobox_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-    CONVERT_UI["b_frames_combobox"] = create_checkbutton(
-        convert_frame_ref,
-        variable=b_frames_variable
-    )
-    add_widget_to_grid(CONVERT_UI["b_frames_combobox"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["b_frames_combobox"] = create_checkbutton(convert_frame_ref, variable=b_frames_variable)
+    add_widget_to_grid(CONVERT_UI["b_frames_combobox"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     # TEXT OVERLAY
-    CONVERT_UI["include_text_overlay_label"] = create_label(convert_frame_ref,
-        text="Include overlay text:")
-    add_widget_to_grid(CONVERT_UI["include_text_overlay_label"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    CONVERT_UI["include_text_overlay_label"] = create_label(convert_frame_ref, text="Include overlay text:")
+    add_widget_to_grid(CONVERT_UI["include_text_overlay_label"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
     CONVERT_UI["include_text_overlay_combobox"] = create_checkbutton(
-        convert_frame_ref,
-        variable=include_text_overlay_variable
+        convert_frame_ref, variable=include_text_overlay_variable
     )
-    add_widget_to_grid(CONVERT_UI["include_text_overlay_combobox"],
-                       row=CONVERT_UI["convert_frame_row_index"])
+    add_widget_to_grid(CONVERT_UI["include_text_overlay_combobox"], row=CONVERT_UI["convert_frame_row_index"])
     inc_convert_frame_row_index()
 
-def update_conversion_options_values(event=None):
-    if (not CONVERT_UI["compression_combobox"].get()
-        or not CONVERT_UI["color_space_combobox"].get()
-        or not CONVERT_UI["audio_codec_combobox"].get()):
-        return
+    # Initially hide the convert button
+    if CONVERT_UI.get("convert_button") is not None:
+        remove_widget_from_grid(CONVERT_UI["convert_button"])
 
-    if CONVERT_UI["convert_button"] is None:
+def should_show_convert_button() -> bool:
+    """Return True only if all required fields are filled"""
+    if not videos_paths:
+        return False
+
+    if not CONVERT_UI.get("compression_combobox") or not CONVERT_UI["compression_combobox"].get():
+        return False
+    if not CONVERT_UI.get("color_space_combobox") or not CONVERT_UI["color_space_combobox"].get():
+        return False
+    if not CONVERT_UI.get("audio_codec_combobox") or not CONVERT_UI["audio_codec_combobox"].get():
+        return False
+
+    return True
+
+def update_conversion_options_values(event=None):
+    """Called whenever any combobox changes"""
+    if CONVERT_UI.get("convert_button") is None:
+        # Create the button once
         CONVERT_UI["convert_button"] = create_button(
             convert_frame_ref,
             text="Convert videos",
             command=on_convert_button_click
         )
+
+    if should_show_convert_button():
         add_widget_to_grid(CONVERT_UI["convert_button"],
                            row=CONVERT_UI["convert_frame_row_index"])
-        inc_convert_frame_row_index()
+        inc_convert_frame_row_index()  # Only increment if we actually show it
+    else:
+        # Hide the button if conditions are not met
+        remove_widget_from_grid(CONVERT_UI["convert_button"])
 
 
 def on_convert_button_click():
@@ -252,6 +249,18 @@ def on_convert_button_click():
 
     thread = threading.Thread(target=_convert_videos_thread)
     thread.start()
+
+def on_clear_path_button_click():
+    global videos_paths
+    videos_paths.clear()
+    
+    if CONVERT_UI.get("file_list_text"):
+        change_text_widget_state(CONVERT_UI["file_list_text"], "normal")
+        CONVERT_UI["file_list_text"].delete('1.0', "end")
+        change_text_widget_state(CONVERT_UI["file_list_text"], "disabled")
+
+    # Refresh convert button visibility after clearing
+    update_conversion_options_values()
 
 def _convert_videos_thread():
     if not videos_paths:

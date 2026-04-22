@@ -1,5 +1,4 @@
 from src.frames.convert.convert_ui import CONVERT_UI
-from src.util import change_text_widget_state
 
 
 def inc_convert_frame_row_index():
@@ -24,8 +23,3 @@ def format_color_space_for_conversion(color_space):
 
 def format_compression_for_conversion(compression):
     return compression.replace("H", "")
-
-def on_clear_path_button_click():
-    change_text_widget_state(CONVERT_UI["file_list_text"], "normal")
-    CONVERT_UI["file_list_text"].delete('1.0', "end")
-    change_text_widget_state(CONVERT_UI["file_list_text"], "disabled")
