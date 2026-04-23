@@ -174,7 +174,7 @@ def on_scale_button_click():
             edit_label_text(
                 SCALE_UI["scaling_status"],
                 new_text=f"Error occurred during scaling: {e}",
-                foreground=LabelColor.RED
+                text_color=LabelColor.RED
             )
 
 def _video_scaling_thread():
@@ -194,7 +194,7 @@ def _video_scaling_thread():
     edit_label_text(
         SCALE_UI["scaling_status"],
         new_text="Video scaling successful",
-        foreground=LabelColor.GREEN
+        text_color=LabelColor.GREEN
     )
 
 def move_video_to_folder(video):
@@ -205,7 +205,7 @@ def move_video_to_folder(video):
         edit_label_text(
             SCALE_UI["scaling_status"],
             new_text="File not found",
-            foreground=LabelColor.RED
+            text_color=LabelColor.RED
         )
 
     resolution_string = DownloadedVideoInfo.get_video_information_from_video_file(scaled_video_file).get_pretty_resolution()

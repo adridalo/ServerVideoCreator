@@ -1,6 +1,7 @@
 import os
 import sys
 from tkinter import W, Button, Entry, Label, Scale, Text, ttk
+import customtkinter as ctk
 
 from src.types.enums.color import LabelColor
 
@@ -41,22 +42,23 @@ def get_proxy():
 def to_mb(bytes):
     return f"{bytes / 1_000_000:.2f}Mb" if bytes else "n/a"
 
-def create_label(frame, text="", foreground=LabelColor.BLACK):
-    return Label(frame, text=text, foreground=foreground)
+def create_label(parent, text, **kwargs):
+    if "text_color" in kwargs and hasattr(kwargs["text_color"], 'value'):
+        kwargs["text_color"] = kwargs["text_color"].value
 
-def create_entry(frame, width=75):
-    return Entry(frame, width=width)
+    return ctk.CTkLabel(parent, text=text, **kwargs)
 
-def create_button(frame, text, command):
-    return Button(frame, text=text, command=command)
+def create_entry(parent, **kwargs):
+    return ctk.CTkEntry(parent, **kwargs)
+
+def create_button(parent, text, command, **kwargs):
+    return ctk.CTkButton(parent, text=text, command=command, **kwargs)
 
 def create_text(frame, height=6, width=70, wrap="word", state="normal"):
     return Text(frame, height=height, width=width, wrap=wrap, state=state)
 
-def create_combobox(frame, width=40, command=lambda: None):
-    combobox = ttk.Combobox(frame, width=width)
-    combobox.bind("<<ComboboxSelected>>", command)
-    return combobox
+def create_combobox(parent, command=None, **kwargs):
+    return ctk.CTkComboBox(parent, command=command, **kwargs)
 
 def create_scale(frame, from_=1, to=100, orient="horizontal"):
     return Scale(frame, from_=from_, to=to, orient=orient)
@@ -64,20 +66,24 @@ def create_scale(frame, from_=1, to=100, orient="horizontal"):
 def create_checkbutton(frame, variable):
     return ttk.Checkbutton(frame, variable=variable)
 
-def edit_label_text(label, new_text, foreground=LabelColor.BLACK, wraplength=500):
-    label.config(text=new_text, foreground=foreground, wraplength=wraplength)
+def edit_label_text(label, new_text, text_color=LabelColor.WHITE, wraplength=500):
+    label.configure(
+        text=new_text,
+        text_color=text_color.value if hasattr(text_color, 'value') else text_color,
+        wraplength=wraplength
+    )
 
 def change_text_widget_state(widget, state):
-    widget.config(state=state)
+    widget.configure(state=state)
 
 def update_combobox_values(combobox, new_values):
-    combobox.config(values=new_values)
+    combobox.configure(values=new_values)
 
 def add_to_text_widget(text_widget, text):
     text_widget.insert("end", text)
 
-def add_widget_to_grid(widget, row=0, column=0, padx=10, pady=5, columnspan=1):
-    widget.grid(row=row, column=column, padx=padx, pady=pady, sticky=W, columnspan=columnspan)
+def add_widget_to_grid(widget, row=0, column=0, padx=10, pady=5, columnspan=1, sticky="w"):
+    widget.grid(row=row, column=column, padx=padx, pady=pady, columnspan=columnspan, sticky=sticky)
 
 def set_combobox_value(combobox, value):
     combobox.set(value)

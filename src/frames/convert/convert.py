@@ -350,11 +350,11 @@ def _convert_videos_thread():
             edit_label_text(
                 CONVERT_UI["convert_status_text"],
                 new_text=f"Error occurred during conversion: {e}",
-                foreground=LabelColor.RED
+                text_color=LabelColor.RED
             )
 
     convert_frame_ref.after(0, lambda: edit_label_text(
         CONVERT_UI["convert_status_text"],
         new_text=f"Conversion of {len(videos_paths)} video(s) completed!",
-        foreground=LabelColor.GREEN
+        text_color=LabelColor.GREEN
     ))
