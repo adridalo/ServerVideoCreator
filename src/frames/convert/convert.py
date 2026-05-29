@@ -53,7 +53,7 @@ def on_file_select_button_click():
     selected = filedialog.askopenfilenames(
         title="Select videos",
         initialdir=last_opened_navigation_path,
-        filetypes=[("Videos", "*.mp4 *.mkv")]
+        filetypes=[("Videos", "*.mp4 *.mkv", "*.mov")]
     )
 
     if not selected:
