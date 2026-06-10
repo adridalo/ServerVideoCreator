@@ -284,13 +284,25 @@ def _convert_videos_thread():
         if include_text_overlay_value == 1:
             overlay_text_size = determine_overlay_text_size(res[0])
 
+        target_dir = os.path.join(
+            "converted", 
+            selected_compression, 
+            res[0], 
+            str(res[1]), 
+            format_color_space_for_conversion(selected_color_space) if selected_color_space != "4:2:0" else "",
+            "B-Frames" if b_frames_value else ""
+        )
+        os.makedirs(target_dir, exist_ok=True)
+
         file_name_no_ext, ext = os.path.splitext(os.path.basename(path))
-        output_path = (
+        output_file_name = (
             f'{"BF_" if b_frames_value else ""}'
             f'{file_name_no_ext}_{res_combined}_{selected_compression}_'
             f'{format_color_space_for_conversion(selected_color_space) + "_" if selected_color_space != "4:2:0" else ""}'
             f'{bit_rate_value}bits{ext}'
         )
+
+        output_path = os.path.join(target_dir, output_file_name)
 
         font_path = resource_path("InfiniteBeyond.ttf")
         sanitized_font_path = font_path.replace("\\", "/").replace(":", "\\\\:")
@@ -335,17 +347,6 @@ def _convert_videos_thread():
             ffmpeg_executable = resource_path("ffmpeg.exe")
             
             ffmpeg.run(stream, cmd=ffmpeg_executable)
-
-            target_dir = os.path.join(
-                "converted", 
-                selected_compression, 
-                res[0], 
-                str(res[1]), 
-                format_color_space_for_conversion(selected_color_space) if selected_color_space != "4:2:0" else "",
-                "B-Frames" if b_frames_value else ""
-            )
-            os.makedirs(target_dir, exist_ok=True)
-            shutil.move(output_path, os.path.join(target_dir, os.path.basename(output_path)))
         except Exception as e:
             edit_label_text(
                 CONVERT_UI["convert_status_text"],
