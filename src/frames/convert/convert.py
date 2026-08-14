@@ -332,7 +332,7 @@ def _convert_videos_thread():
                 'g': str(calculate_gop(res[1])),
                 'ac': '2',
                 'vf': vf,
-                'bf': 0
+                'bf': 0,
             }
 
             if b_frames_value:
