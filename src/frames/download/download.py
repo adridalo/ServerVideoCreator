@@ -1,6 +1,5 @@
 import os
 import re
-import shutil
 import threading
 from tkinter import Toplevel
 
@@ -200,9 +199,20 @@ def _download_video_thread():
                     info.get("filepath") or info.get("_filename")
                 )
 
-
+        # Ask for the title up front (instead of after downloading) so
+        # yt-dlp can write the merged file straight to its final
+        # name/location. We used to download to a temp name and then
+        # os.rename + shutil.move it into place afterwards, which our
+        # antivirus (Trend Micro) flagged as ransomware-like behavior
+        # (write a file, then quickly rename and relocate it) and killed
+        # the app mid-move.
         cleaned_title = re.sub(r'[^A-Za-z0-9]', '', video_info.get("title", "video"))
-        save_path = os.path.join(BASE_APP_DIR, f"{cleaned_title}.%(ext)s")
+        video_title = open_title_window(cleaned_title)
+
+        target_folder = get_target_folder_for_format(resolution_format)
+        os.makedirs(target_folder, exist_ok=True)
+        save_path = os.path.join(target_folder, f"{video_title}.%(ext)s")
+
         yt_dlp_options = {
             "format": f"{resolution_format.id}+{audio_format.id}",
             "outtmpl": save_path,
@@ -210,19 +220,12 @@ def _download_video_thread():
             "progress_hooks": [output_path_hook],
             "nopart": True,
 
-            "javascript_executable": resource_path("qjs.exe"),
-            "ffmpeg_location": resource_path("."), 
+            "js_runtimes": {"quickjs": {"path": resource_path("qjs.exe")}},
+            "ffmpeg_location": resource_path("."),
             "ffprobe_location": resource_path("."),
             "cookiefile": resource_path("cookies.txt"),
-            
+
             "remote_components": ["ejs:github"],
-    
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["ios", "android_vr"],
-                    "player_js_version": ["actual"]
-                }
-            },
         }
 
         proxy = get_proxy()
@@ -232,11 +235,11 @@ def _download_video_thread():
         with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
             ydl.download([video_url])
 
-        downloaded_video_title = open_title_window(cleaned_title)
         if not wait_for_file_release(downloaded_video_path):
             raise Exception("File is locked after download")
-        
-        move_video_to_folder(cleaned_title, renamed_title=downloaded_video_title)
+
+        if not validate_downloaded_video():
+            return
 
         edit_label_text(DOWNLOAD_UI["download_status_text"], "Download successful!", foreground=LabelColor.GREEN)
 
@@ -281,42 +284,34 @@ def open_title_window(original_title):
     download_frame_ref.wait_window(new_window)
     return title_to_save
 
-def move_video_to_folder(title, **kwargs):
-    global downloaded_video_path 
-    
+def get_target_folder_for_format(resolution_format):
+    width, height = map(int, resolution_format.resolution.split("x"))
+    fps = int(resolution_format.fps) if resolution_format.fps != "n/a" else 0
+
+    pretty_resolution = DownloadedVideoInfo(None, None, (width, height), fps).get_pretty_resolution()[0]
+
+    return os.path.join(BASE_APP_DIR, "raw", pretty_resolution, str(fps))
+
+def validate_downloaded_video():
     if not os.path.exists(downloaded_video_path):
-        return
-    
-    downloaded_video_info = DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path)
-    if not downloaded_video_info:
+        edit_label_text(
+            DOWNLOAD_UI["download_status_text"],
+            new_text="Downloaded file not found",
+            foreground=LabelColor.RED,
+            wraplength=100
+        )
+        return False
+
+    if not DownloadedVideoInfo.get_video_information_from_video_file(downloaded_video_path):
         edit_label_text(
             DOWNLOAD_UI["download_status_text"],
             new_text="Could not extract video info",
             foreground=LabelColor.RED,
             wraplength=100
         )
-        return  
-    
-    downloaded_video_pretty_resolution = downloaded_video_info.get_pretty_resolution()[0]
+        return False
 
-
-    target_folder = os.path.join("raw", downloaded_video_pretty_resolution, str(downloaded_video_info.fps))
-    os.makedirs(target_folder, exist_ok=True)
-
-    renamed_video_title = kwargs.get("renamed_title")
-    if renamed_video_title and renamed_video_title != title:
-        folder = os.path.dirname(downloaded_video_path)
-        _, ext = os.path.splitext(downloaded_video_path)
-
-        new_filename = renamed_video_title + ext
-        new_full_path = os.path.join(folder, new_filename)
-
-        os.rename(downloaded_video_path, new_full_path)
-        downloaded_video_path = new_full_path
-        
-    destination_file_path = os.path.join(target_folder, os.path.basename(downloaded_video_path))
-    shutil.move(downloaded_video_path, destination_file_path)
-    downloaded_video_path = os.path.abspath(destination_file_path)
+    return True
 
 def on_open_file_in_folder_button_press():
     open_folder(os.path.dirname(downloaded_video_path))

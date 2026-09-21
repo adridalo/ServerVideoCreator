@@ -14,16 +14,10 @@ def yt_dlp_fetch_video_info(url):
     
     yt_dlp_options = {
         "quiet": True,
-        "javascript_executable": resource_path("qjs.exe"),
+        "js_runtimes": {"quickjs": {"path": resource_path("qjs.exe")}},
         "cookiefile": resource_path("cookies.txt"),
         "remote_components": ["ejs:github"],
         "ffmpeg_location": resource_path("."),
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["ios", "android_vr"],
-                "player_js_version": ["actual"]
-            }
-        },
     }
 
     if get_proxy():

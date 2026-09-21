@@ -24,22 +24,29 @@ echo [INFO] Upgrading pip in the virtual environment...
 pip install --upgrade pip --proxy %PROXY%
 echo [INFO] pip upgraded successfully.
 
-:: Step 2: Upgrade all installed packages inside the virtual environment
+:: Step 2: Install the pinned dependencies from requirements.txt
+:: This has to happen before the freeze below, otherwise a fresh venv has
+:: nothing installed yet and the freeze would overwrite requirements.txt
+:: with an (almost) empty file.
+if exist requirements.txt (
+    echo [INFO] Installing dependencies from requirements.txt...
+    pip install -r requirements.txt --proxy %PROXY%
+    echo [INFO] Dependencies installed successfully.
+) else (
+    echo [INFO] No requirements.txt found, skipping initial install.
+)
+
+:: Step 3: Upgrade all installed packages inside the virtual environment
 echo [INFO] Upgrading all installed packages in the virtual environment...
 for /f "delims=" %%a in ('pip freeze') do (
     pip install --upgrade %%a --proxy %PROXY%
 )
 echo [INFO] All packages upgraded successfully.
 
-:: Step 3: Update requirements.txt with the latest versions inside the virtual environment
+:: Step 4: Update requirements.txt with the latest versions inside the virtual environment
 echo [INFO] Updating requirements.txt with the latest versions...
-pip freeze > requirements.txt --proxy %PROXY%
+pip freeze --proxy %PROXY% > requirements.txt
 echo [INFO] requirements.txt updated successfully.
-
-:: Step 4: Update new packages saved in requirements.txt
-echo [INFO] Updating packges saved in requirements.txt
-pip install -r requirements.txt --proxy %PROXY%
-echo [INFO] pip packges updated successfully.
 
 
 :: Finish
